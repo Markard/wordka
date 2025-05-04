@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Markard/wordka/config"
+	"github.com/Markard/wordka/internal/app"
 )
 
 func main() {
 	env, cfg := config.MustLoad()
-	fmt.Println(env, cfg)
+
+	app.Run(env, cfg)
 }

@@ -2,3 +2,7 @@ http_server:
   address: "localhost:8081"
   timeout: 4s
   idle_timeout: 60s
+log:
+  level: debug
+  file_path: tmp/log/dev.txt
+  caller_skip_frame_count: 3

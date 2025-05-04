@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
-	"log"
+	"github.com/rs/zerolog/log"
 	"os"
 	"time"
 )
@@ -11,12 +11,19 @@ import (
 type (
 	Config struct {
 		HttpServer HttpServer `yaml:"http_server"`
+		Log        Log        `yaml:"log"`
 	}
 
 	HttpServer struct {
 		Address     string        `yaml:"address" env-required:"true"`
 		Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
 		IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	}
+
+	Log struct {
+		Level                string `yaml:"level" env-default:"debug"`
+		FilePath             string `yaml:"file_path" env-required:"true"`
+		CallerSkipFrameCount int    `yaml:"caller_skip_frame_count" env-default:"3"`
 	}
 
 	Env struct {
@@ -29,23 +36,23 @@ type (
 func MustLoad() (*Env, *Config) {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		log.Println(err)
+		log.Fatal().Err(err).Msg("could not get current directory")
 	}
 
 	var env Env
 	dotenvPath := fmt.Sprintf("%s/.env", currentDir)
 	if err := cleanenv.ReadConfig(dotenvPath, &env); err != nil {
-		log.Fatalf("failed to read config: %v", err)
+		log.Fatal().Err(err).Msg("failed to read config")
 	}
 
 	configPath := fmt.Sprintf("%s/config/%s.yaml", currentDir, env.AppEnv)
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file %s does not exist", configPath)
+		log.Fatal().Err(err).Msg("config file does not exist")
 	}
 
 	var cfg Config
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("failed to read config: %v", err)
+		log.Fatal().Err(err).Msg("failed to read config")
 	}
 
 	return &env, &cfg
