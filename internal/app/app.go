@@ -25,13 +25,13 @@ func Run(env *config.Env, cfg *config.Config) {
 		}
 	}(logFile)
 	lgr := logger.New(cfg.Log.Level, cfg.Log.CallerSkipFrameCount, logFile)
-	lgr.Info("starting wordka app")
 
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
 	http.SetupRouter(httpServer.Router, cfg, lgr)
 
 	// Start Http Server
+	lgr.Info("app - Run - httpServer.Start")
 	httpServer.Start()
 
 	// Waiting signal
