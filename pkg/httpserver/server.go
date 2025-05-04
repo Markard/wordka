@@ -24,6 +24,7 @@ func New(
 ) *Server {
 	router := chi.NewRouter()
 	router.Use(middleware.Timeout(timeout))
+	router.Use(middleware.Recoverer)
 
 	httpServer := &http.Server{
 		Addr:        address,
