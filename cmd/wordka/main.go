@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/Markard/wordka/internal/config"
+	"github.com/Markard/wordka/config"
 )
 
 func main() {
