@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Markard/wordka/internal/config"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	env, cfg := config.MustLoad()
+	fmt.Println(env, cfg)
 }
