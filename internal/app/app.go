@@ -28,13 +28,8 @@ func Run(env *config.Env, cfg *config.Config) {
 	lgr.Info("starting wordka app")
 
 	// HTTP Server
-	httpServer := httpserver.New(
-		cfg.HttpServer.Address,
-		cfg.HttpServer.Timeout,
-		cfg.HttpServer.IdleTimeout,
-		cfg.HttpServer.ShutdownTimeout,
-	)
-	http.NewRouter(httpServer.Router, cfg, lgr)
+	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
+	http.SetupRouter(httpServer.Router, cfg, lgr)
 
 	// Start Http Server
 	httpServer.Start()

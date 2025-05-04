@@ -3,28 +3,19 @@ package httpserver
 import (
 	"context"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 	"time"
 )
 
 type Server struct {
-	Router          *chi.Mux
-	HttpServer      *http.Server
-	Context         context.Context
-	notify          chan error
-	shutdownTimeout time.Duration
+	Router     *chi.Mux
+	context    context.Context
+	httpServer *http.Server
+	notify     chan error
 }
 
-func New(
-	address string,
-	timeout time.Duration,
-	idleTimeout time.Duration,
-	shutdownTimeout time.Duration,
-) *Server {
+func New(address string, idleTimeout time.Duration) *Server {
 	router := chi.NewRouter()
-	router.Use(middleware.Timeout(timeout))
-	router.Use(middleware.Recoverer)
 
 	httpServer := &http.Server{
 		Addr:        address,
@@ -33,17 +24,16 @@ func New(
 	}
 
 	return &Server{
-		Router:          router,
-		HttpServer:      httpServer,
-		Context:         context.Background(),
-		notify:          make(chan error, 1),
-		shutdownTimeout: shutdownTimeout,
+		Router:     router,
+		httpServer: httpServer,
+		context:    context.Background(),
+		notify:     make(chan error, 1),
 	}
 }
 
 func (server *Server) Start() {
 	go func() {
-		server.notify <- server.HttpServer.ListenAndServe()
+		server.notify <- server.httpServer.ListenAndServe()
 		close(server.notify)
 	}()
 }
@@ -53,5 +43,5 @@ func (server *Server) Notify() <-chan error {
 }
 
 func (server *Server) Shutdown() error {
-	return server.HttpServer.Shutdown(server.Context)
+	return server.httpServer.Shutdown(server.context)
 }
