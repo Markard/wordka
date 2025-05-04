@@ -6,6 +6,7 @@ require github.com/ilyakaznacheev/cleanenv v1.5.0
 
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
+	github.com/go-chi/chi/v5 v5.2.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
