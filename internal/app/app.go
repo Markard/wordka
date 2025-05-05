@@ -6,6 +6,7 @@ import (
 	"github.com/Markard/wordka/internal/controller/http"
 	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/logger"
+	"github.com/Markard/wordka/pkg/postgres"
 	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 )
 
 func Run(env *config.Env, cfg *config.Config) {
+	// Initialize logger
 	logFile, err := os.OpenFile(cfg.Log.FilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatal().
@@ -25,6 +27,15 @@ func Run(env *config.Env, cfg *config.Config) {
 		}
 	}(logFile)
 	lgr := logger.New(cfg.Log.Level, cfg.Log.CallerSkipFrameCount, logFile)
+
+	// Repository PostgreSQL
+	db := postgres.New()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			lgr.Error(err)
+		}
+	}()
 
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
