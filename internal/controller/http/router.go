@@ -9,8 +9,9 @@ import (
 )
 
 func SetupRouter(router *chi.Mux, cfg *config.Config, logger logger.Interface) {
-	router.Use(middleware.Timeout(cfg.HttpServer.Timeout))
+	router.Use(logger.RequestLogger)
 	router.Use(middleware.Recoverer)
+	router.Use(middleware.Timeout(cfg.HttpServer.Timeout))
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))

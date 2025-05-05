@@ -3,9 +3,12 @@ package logger
 import (
 	"fmt"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/pkgerrors"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type Interface interface {
@@ -14,6 +17,7 @@ type Interface interface {
 	Warn(message string, args ...interface{})
 	Error(err error)
 	Fatal(err error)
+	RequestLogger(next http.Handler) http.Handler
 }
 
 type Logger struct {
@@ -95,4 +99,39 @@ func (logger *Logger) log(message string, args ...interface{}) {
 	} else {
 		logger.logger.Info().Msgf(message, args...)
 	}
+}
+
+func (logger *Logger) RequestLogger(next http.Handler) http.Handler {
+	h := hlog.NewHandler(*logger.logger)
+
+	accessHandler := hlog.AccessHandler(
+		func(r *http.Request, status, size int, duration time.Duration) {
+			hlog.FromRequest(r).Info().
+				Str("method", r.Method).
+				Stringer("url", r.URL).
+				Int("status_code", status).
+				Int("response_size_bytes", size).
+				Dur("elapsed_ms", duration).
+				Msg("incoming request")
+		},
+	)
+
+	userAgentHandler := hlog.UserAgentHandler("http_user_agent")
+	remoteAddrHandler := hlog.RemoteAddrHandler("ip")
+	refererHandler := hlog.RefererHandler("referer")
+	requestIDHandler := hlog.RequestIDHandler("req_id", "Request-Id")
+
+	return h(
+		accessHandler(
+			userAgentHandler(
+				remoteAddrHandler(
+					refererHandler(
+						requestIDHandler(
+							next,
+						),
+					),
+				),
+			),
+		),
+	)
 }
