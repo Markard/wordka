@@ -2,14 +2,15 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"time"
 )
 
-func New() *bun.DB {
-	dsn := "postgres://user:pass@localhost:5432/db_name?sslmode=disable"
+func New(pgUrl string) *bun.DB {
+	dsn := fmt.Sprintf("%s?sslmode=disable", pgUrl)
 	connector := pgdriver.NewConnector(
 		pgdriver.WithDSN(dsn),
 		pgdriver.WithTimeout(5*time.Second),
