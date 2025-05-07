@@ -30,7 +30,7 @@ type (
 		AppName    string `env:"APP_NAME" env-required:"true"`
 		AppVersion string `env:"APP_VERSION" env-required:"true"`
 		AppEnv     string `env:"APP_ENV" env-required:"true"`
-		PgUrl      string `env:"PG_URL" env-required:"true"`
+		PgDSN      string `env:"PG_DSN" env-required:"true"`
 	}
 )
 

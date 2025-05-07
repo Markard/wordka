@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-chi/render v1.0.3
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/rs/zerolog v1.34.0
 	github.com/uptrace/bun v1.2.11
@@ -14,7 +15,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/ajg/form v1.5.1 // indirect
-	github.com/go-chi/render v1.0.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
