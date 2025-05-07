@@ -15,10 +15,9 @@ type (
 	}
 
 	HttpServer struct {
-		Address         string        `yaml:"address" env-required:"true"`
-		Timeout         time.Duration `yaml:"timeout" env-default:"5s"`
-		IdleTimeout     time.Duration `yaml:"idle_timeout" env-default:"30s"`
-		ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env-default:"10s"`
+		Address     string        `yaml:"address" env-required:"true"`
+		Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
+		IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"30s"`
 	}
 
 	Log struct {

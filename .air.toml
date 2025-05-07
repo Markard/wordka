@@ -1,0 +1,53 @@
+root = "."
+tmp_dir = "tmp"
+testdata_dir = "testdata"
+
+[build]
+args_bin = []
+cmd = "go build -o ./tmp/build/wordka ./cmd/wordka/main.go"
+bin = "tmp/build"
+full_bin = "./tmp/build/wordka"
+log = "./tmp/build/air.log"
+include_ext = ["go", "yaml", "toml"]
+exclude_regex = ["_test\\.go"]
+exclude_dir = ["tmp"]
+delay = 500
+exclude_file = []
+exclude_unchanged = false
+follow_symlink = false
+include_dir = []
+include_file = []
+kill_delay = "0s"
+poll = false
+poll_interval = 0
+post_cmd = []
+pre_cmd = []
+rerun = false
+rerun_delay = 250
+send_interrupt = false
+stop_on_error = false
+
+[color]
+build = "yellow"
+main = "magenta"
+runner = "green"
+watcher = "cyan"
+
+[log]
+time = true
+# Only show main log (silences watcher, build, runner)
+main_only = false
+# silence all logs produced by air
+silent = false
+
+[misc]
+clean_on_exit = false
+
+[proxy]
+build_port = 0
+enabled = false
+proxy_port = 0
+
+[screen]
+clear_on_rebuild = false
+keep_scroll = true

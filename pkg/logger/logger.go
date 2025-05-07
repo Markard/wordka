@@ -3,16 +3,21 @@ package logger
 import (
 	"fmt"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
+	"github.com/rs/zerolog/pkgerrors"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type Interface interface {
 	Debug(message interface{}, args ...interface{})
 	Info(message string, args ...interface{})
 	Warn(message string, args ...interface{})
-	Error(message interface{}, args ...interface{})
-	Fatal(message interface{}, args ...interface{})
+	Error(err error)
+	Fatal(err error)
+	RequestLogger(next http.Handler) http.Handler
 }
 
 type Logger struct {
@@ -23,6 +28,8 @@ var _ Interface = (*Logger)(nil)
 
 func New(level string, callerSkipFrameCount int, logFile *os.File) *Logger {
 	setGlobalLevel(level)
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
 	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
 	multi := zerolog.MultiLevelWriter(consoleWriter, logFile)
@@ -64,24 +71,21 @@ func (logger *Logger) Warn(message string, args ...interface{}) {
 	logger.log(message, args...)
 }
 
-func (logger *Logger) Error(message interface{}, args ...interface{}) {
-	if logger.logger.GetLevel() == zerolog.DebugLevel {
-		logger.Debug(message, args...)
-	}
-
-	logger.msg("error", message, args...)
+func (logger *Logger) Error(err error) {
+	logger.logger.Error().Stack().Err(err).Msg("")
 }
 
-func (logger *Logger) Fatal(message interface{}, args ...interface{}) {
-	logger.msg("fatal", message, args...)
+func (logger *Logger) Fatal(err error) {
+	logger.logger.
+		Fatal().
+		Err(err).
+		Msg("")
 
 	os.Exit(1)
 }
 
 func (logger *Logger) msg(level string, message interface{}, args ...interface{}) {
 	switch msg := message.(type) {
-	case error:
-		logger.log(msg.Error(), args...)
 	case string:
 		logger.log(msg, args...)
 	default:
@@ -95,4 +99,39 @@ func (logger *Logger) log(message string, args ...interface{}) {
 	} else {
 		logger.logger.Info().Msgf(message, args...)
 	}
+}
+
+func (logger *Logger) RequestLogger(next http.Handler) http.Handler {
+	h := hlog.NewHandler(*logger.logger)
+
+	accessHandler := hlog.AccessHandler(
+		func(r *http.Request, status, size int, duration time.Duration) {
+			hlog.FromRequest(r).Info().
+				Str("method", r.Method).
+				Stringer("url", r.URL).
+				Int("status_code", status).
+				Int("response_size_bytes", size).
+				Dur("elapsed_ms", duration).
+				Msg("incoming request")
+		},
+	)
+
+	userAgentHandler := hlog.UserAgentHandler("http_user_agent")
+	remoteAddrHandler := hlog.RemoteAddrHandler("ip")
+	refererHandler := hlog.RefererHandler("referer")
+	requestIDHandler := hlog.RequestIDHandler("req_id", "Request-Id")
+
+	return h(
+		accessHandler(
+			userAgentHandler(
+				remoteAddrHandler(
+					refererHandler(
+						requestIDHandler(
+							next,
+						),
+					),
+				),
+			),
+		),
+	)
 }

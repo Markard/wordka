@@ -2,7 +2,6 @@ http_server:
   address: "localhost:8081"
   timeout: 5s
   idle_timeout: 30s
-  shutdown_timeout: 10s
 log:
   level: debug
   file_path: tmp/log/dev.txt
