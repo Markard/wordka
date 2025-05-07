@@ -17,11 +17,13 @@ func SetupRouter(router *chi.Mux, cfg *config.Config, logger logger.Interface) {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
-	router.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		robotTxt := `User-agent: *
+	router.Get("/robots.txt", robotsTxt)
+}
+
+func robotsTxt(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	robotTxt := `User-agent: *
 Disallow: /`
-		render.PlainText(w, r, robotTxt)
-	})
+	render.PlainText(w, r, robotTxt)
 }
