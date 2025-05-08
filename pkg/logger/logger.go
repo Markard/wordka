@@ -18,6 +18,7 @@ type Interface interface {
 	Error(err error)
 	Fatal(err error)
 	RequestLogger(next http.Handler) http.Handler
+	ZerologLogger() *zerolog.Logger
 }
 
 type Logger struct {
@@ -134,4 +135,8 @@ func (logger *Logger) RequestLogger(next http.Handler) http.Handler {
 			),
 		),
 	)
+}
+
+func (logger *Logger) ZerologLogger() *zerolog.Logger {
+	return logger.logger
 }

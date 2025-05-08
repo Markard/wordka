@@ -29,7 +29,7 @@ func Run(env *config.Env, cfg *config.Config) {
 	lgr := logger.New(cfg.Log.Level, cfg.Log.CallerSkipFrameCount, logFile)
 
 	// Repository PostgreSQL
-	db := postgres.New(env.PgDSN)
+	db := postgres.New(env.PgDSN, lgr.ZerologLogger())
 	defer func() {
 		err := db.Close()
 		if err != nil {
