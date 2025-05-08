@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"github.com/Markard/wordka/config"
 	"github.com/Markard/wordka/internal/controller/http"
+	"github.com/Markard/wordka/internal/repo"
+	"github.com/Markard/wordka/internal/usecase"
 	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
+	"github.com/Markard/wordka/pkg/validator"
 	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
@@ -28,6 +31,14 @@ func Run(env *config.Env, cfg *config.Config) {
 	}(logFile)
 	lgr := logger.New(cfg.Log.Level, cfg.Log.CallerSkipFrameCount, logFile)
 
+	// Validator
+	val, err := validator.NewValidator()
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("could not initiate validator")
+	}
+
 	// Repository PostgreSQL
 	db := postgres.New(env.PgDSN, lgr.ZerologLogger())
 	defer func() {
@@ -37,9 +48,12 @@ func Run(env *config.Env, cfg *config.Config) {
 		}
 	}()
 
+	// Use cases
+	auth := usecase.NewAuth(repo.NewAuthRepository(db))
+
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
-	http.SetupRouter(httpServer.Router, cfg, lgr)
+	http.SetupRouter(httpServer.Router, cfg, lgr, val.Validator, auth)
 
 	// Start Http Server
 	lgr.Info("app - Run - httpServer.Start")
