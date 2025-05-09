@@ -5,30 +5,18 @@ import (
 	"github.com/Markard/wordka/pkg/jwtauth"
 )
 
-type UserCreator interface {
+type IAuthRepository interface {
 	Create(user *entity.User) error
-}
-
-type UserProvider interface {
 	FindBy(email string) (*entity.User, error)
 }
 
 type Auth struct {
-	creator      UserCreator
-	provider     UserProvider
+	repository   IAuthRepository
 	tokenService *jwtauth.TokenService
 }
 
-func NewAuth(
-	creator UserCreator,
-	provider UserProvider,
-	tokenService *jwtauth.TokenService,
-) *Auth {
-	return &Auth{
-		creator:      creator,
-		provider:     provider,
-		tokenService: tokenService,
-	}
+func NewAuth(repository IAuthRepository, tokenService *jwtauth.TokenService) *Auth {
+	return &Auth{repository: repository, tokenService: tokenService}
 }
 
 func (auth *Auth) Register(name string, email string, rawPassword string) (*entity.User, error) {
@@ -36,13 +24,13 @@ func (auth *Auth) Register(name string, email string, rawPassword string) (*enti
 	if err != nil {
 		return nil, err
 	}
-	err = auth.creator.Create(user)
+	err = auth.repository.Create(user)
 
 	return user, err
 }
 
 func (auth *Auth) Login(email string, password string) (string, error) {
-	user, err := auth.provider.FindBy(email)
+	user, err := auth.repository.FindBy(email)
 	if err != nil {
 		if user == nil {
 			return "", ErrUserNotFound{email}

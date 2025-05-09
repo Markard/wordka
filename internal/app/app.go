@@ -51,12 +51,7 @@ func Run(env *config.Env, cfg *config.Config) {
 
 	// Use cases
 	tokenService := jwtauth.NewTokenService(env.ES256PrivateKey, env.ES256PublicKey)
-	authRepository := repo.NewAuthRepository(db)
-	auth := usecase.NewAuth(
-		authRepository,
-		authRepository,
-		tokenService,
-	)
+	auth := usecase.NewAuth(repo.NewAuthRepository(db), tokenService)
 
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
