@@ -24,15 +24,15 @@ func NewController(auth *usecase.Auth, logger logger.Interface, validator *valid
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 	converter := registration.NewConverter(c.validator)
-	registrationReq, errRenderer := converter.ValidateAndApply(r)
-	if errRenderer != nil {
-		render.JSON(w, r, errRenderer)
+	regRequest, converterErr := converter.ValidateAndApply(r)
+	if converterErr != nil {
+		_ = render.Render(w, r, converterErr)
 		return
 	}
 
-	user, err := c.auth.Register(registrationReq.Name, registrationReq.Email, registrationReq.Password)
+	user, err := c.auth.Register(regRequest.Name, regRequest.Email, regRequest.Password)
 	if err != nil {
-		render.JSON(w, r, response.ErrInvalidRequest(err))
+		_ = render.Render(w, r, response.ErrInvalidRequest(err))
 		return
 	}
 
@@ -45,16 +45,16 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	converter := login.NewConverter(c.validator)
 	loginRequest, converterErr := converter.ValidateAndApply(r)
 	if converterErr != nil {
-		render.JSON(w, r, converterErr)
+		_ = render.Render(w, r, converterErr)
 		return
 	}
 
 	tokenString, err := c.auth.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
 		if errors.As(err, &usecase.ErrUserNotFound{}) {
-			render.JSON(w, r, response.ErrIncorrectCredentials(err))
+			_ = render.Render(w, r, response.ErrIncorrectCredentials(err))
 		} else {
-			render.JSON(w, r, response.ErrInternalServer(err))
+			_ = render.Render(w, r, response.ErrInternalServer(err))
 			c.logger.Error(err)
 		}
 		return

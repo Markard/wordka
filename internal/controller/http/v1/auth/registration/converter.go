@@ -21,7 +21,7 @@ func (c *Converter) ValidateAndApply(r *http.Request) (*Request, render.Renderer
 
 	err := json.NewDecoder(r.Body).Decode(registrationReq)
 	if err != nil {
-		return nil, response.ErrInvalidRequest(err)
+		return nil, response.ErrInvalidJson(err)
 	}
 
 	if errVal := c.validator.Struct(registrationReq); errVal != nil {
