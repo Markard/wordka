@@ -2,8 +2,11 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"github.com/Markard/wordka/internal/entity"
+	"github.com/jackc/pgerrcode"
 	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 type AuthRepository struct {
@@ -17,7 +20,12 @@ func NewAuthRepository(pgDb *bun.DB) *AuthRepository {
 func (r AuthRepository) Create(user *entity.User) error {
 	_, err := r.pgDb.NewInsert().Model(user).Returning("id").Exec(context.Background())
 	if err != nil {
-		return err
+		var pgErr pgdriver.Error
+		if errors.As(err, &pgErr) && pgErr.IntegrityViolation() && pgErr.Field('C') == pgerrcode.UniqueViolation {
+			return ErrEmailUniqConstraint{email: user.Email}
+		} else {
+			return err
+		}
 	}
 
 	return nil

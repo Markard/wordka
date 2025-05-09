@@ -32,7 +32,12 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 
 	user, err := c.auth.Register(regRequest.Name, regRequest.Email, regRequest.Password)
 	if err != nil {
-		_ = render.Render(w, r, response.ErrInvalidRequest(err))
+		if errors.As(err, &usecase.ErrUserAlreadyExists{}) {
+			_ = render.Render(w, r, response.ErrConflict(err))
+			return
+		}
+		_ = render.Render(w, r, response.ErrInternalServer(err))
+		c.logger.Error(err)
 		return
 	}
 
