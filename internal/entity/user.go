@@ -34,6 +34,11 @@ func NewUser(name string, email string, rawPassword string) (*User, error) {
 	}, nil
 }
 
+func (user *User) IsPasswordMatch(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	return err == nil
+}
+
 func hashPassword(rawPassword string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), 12)
 	return string(bytes), err

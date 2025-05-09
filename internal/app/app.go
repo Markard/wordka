@@ -7,6 +7,7 @@ import (
 	"github.com/Markard/wordka/internal/repo"
 	"github.com/Markard/wordka/internal/usecase"
 	"github.com/Markard/wordka/pkg/httpserver"
+	"github.com/Markard/wordka/pkg/jwtauth"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
 	"github.com/Markard/wordka/pkg/validator"
@@ -49,7 +50,13 @@ func Run(env *config.Env, cfg *config.Config) {
 	}()
 
 	// Use cases
-	auth := usecase.NewAuth(repo.NewAuthRepository(db))
+	tokenService := jwtauth.NewTokenService(env.ES256PrivateKey, env.ES256PublicKey)
+	authRepository := repo.NewAuthRepository(db)
+	auth := usecase.NewAuth(
+		authRepository,
+		authRepository,
+		tokenService,
+	)
 
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)

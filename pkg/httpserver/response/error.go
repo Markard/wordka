@@ -37,6 +37,15 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func ErrInvalidJson(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: http.StatusBadRequest,
+		StatusText:     "Invalid JSON",
+		ErrorText:      err.Error(),
+	}
+}
+
 func ErrInvalidRequest(err error) render.Renderer {
 	var msg string
 	switch err.(type) {
@@ -62,6 +71,24 @@ func ErrInvalidRequest(err error) render.Renderer {
 		HTTPStatusCode: 400,
 		StatusText:     "Invalid request.",
 		ErrorText:      msg,
+	}
+}
+
+func ErrIncorrectCredentials(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: http.StatusUnauthorized,
+		StatusText:     "Authorization failed.",
+		ErrorText:      "The credentials provided are incorrect.",
+	}
+}
+
+func ErrInternalServer(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: http.StatusInternalServerError,
+		StatusText:     "Internal Server Error.",
+		ErrorText:      "Internal Server Error.",
 	}
 }
 

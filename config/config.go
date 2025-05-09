@@ -27,10 +27,12 @@ type (
 	}
 
 	Env struct {
-		AppName    string `env:"APP_NAME" env-required:"true"`
-		AppVersion string `env:"APP_VERSION" env-required:"true"`
-		AppEnv     string `env:"APP_ENV" env-required:"true"`
-		PgDSN      string `env:"PG_DSN" env-required:"true"`
+		AppName         string `env:"APP_NAME" env-required:"true"`
+		AppVersion      string `env:"APP_VERSION" env-required:"true"`
+		AppEnv          string `env:"APP_ENV" env-required:"true"`
+		PgDSN           string `env:"PG_DSN" env-required:"true"`
+		ES256PrivateKey string `env:"ES256_PRIVATE_KEY" env-required:"true"`
+		ES256PublicKey  string `env:"ES256_PUBLIC_KEY" env-required:"true"`
 	}
 )
 

@@ -18,6 +18,7 @@ func GetRouter(
 	c := NewController(authUC, logger, val)
 
 	r.Post("/register", c.Register)
+	r.Post("/login", c.Login)
 
 	return r
 }
