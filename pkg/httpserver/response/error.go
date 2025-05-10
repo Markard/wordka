@@ -52,11 +52,21 @@ func ErrInvalidJson(err error) render.Renderer {
 	}
 }
 
+func ErrUnauthorized(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: http.StatusUnauthorized,
+		StatusText:     "Authentication required",
+		ErrorText: "Access to this resource requires authentication. Please provide a valid JWT token in the " +
+			"Authorization header (Bearer {token}), in the 'jwt' cookie, or as the 'jwt' query parameter.",
+	}
+}
+
 func ErrIncorrectCredentials(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: http.StatusUnauthorized,
-		StatusText:     "Authorization failed.",
+		StatusText:     "Authorization failed",
 		ErrorText:      "The credentials provided are incorrect.",
 	}
 }
@@ -65,7 +75,7 @@ func ErrInternalServer(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: http.StatusInternalServerError,
-		StatusText:     "Internal Server Error.",
+		StatusText:     "Internal Server Error",
 		ErrorText:      "Internal Server Error.",
 	}
 }
