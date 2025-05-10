@@ -24,7 +24,7 @@ func SetupRouter(
 	router.Use(middleware.Timeout(cfg.HttpServer.Timeout))
 
 	router.Get("/robots.txt", robotsTxt)
-	router.Mount("/v1", auth.GetRouter(cfg, logger, val, authUC))
+	router.Mount("/v1", auth.GetRouter(logger, val, authUC))
 }
 
 func robotsTxt(w http.ResponseWriter, r *http.Request) {

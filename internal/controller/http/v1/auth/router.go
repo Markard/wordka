@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"github.com/Markard/wordka/config"
 	"github.com/Markard/wordka/internal/usecase"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/chi/v5"
@@ -9,7 +8,6 @@ import (
 )
 
 func GetRouter(
-	cfg *config.Config,
 	logger logger.Interface,
 	val *validator.Validate,
 	authUC *usecase.Auth,
