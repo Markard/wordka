@@ -7,13 +7,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func GetRouter(
+func CreateRouter(
 	logger logger.Interface,
 	val httpserver.ProjectValidator,
-	authUC *usecase.Auth,
+	authUseCase *usecase.Auth,
 ) *chi.Mux {
 	r := chi.NewRouter()
-	c := NewController(authUC, logger, val)
+	c := NewController(authUseCase, logger, val)
 
 	r.Post("/register", c.Register)
 	r.Post("/login", c.Login)
