@@ -1,6 +1,8 @@
 package game
 
 import (
+	"github.com/Markard/wordka/internal/entity"
+	"github.com/Markard/wordka/internal/infra/middleware/jwt"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -15,6 +17,12 @@ func CreateRouter(
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		currentUser, _ := r.Context().Value(jwt.CurrentUserCtxKey).(*entity.User)
+
+		render.JSON(w, r, currentUser)
+
+		// Получи из контекста user id
+		// Вызови юзкейс с user id
 		render.JSON(w, r, "Hello games!")
 	})
 

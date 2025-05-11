@@ -9,6 +9,11 @@ import (
 )
 
 type (
+	Setup struct {
+		Config *Config
+		Env    *Env
+	}
+
 	Config struct {
 		HttpServer HttpServer `yaml:"http_server"`
 		Log        Log        `yaml:"log"`
@@ -36,7 +41,7 @@ type (
 	}
 )
 
-func MustLoad() (*Env, *Config) {
+func MustLoad() *Setup {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		log.Fatal().Err(err).Msg("could not get current directory")
@@ -58,5 +63,5 @@ func MustLoad() (*Env, *Config) {
 		log.Fatal().Err(err).Msg("failed to read config")
 	}
 
-	return &env, &cfg
+	return &Setup{&cfg, &env}
 }
