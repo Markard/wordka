@@ -13,12 +13,12 @@ PG_DSN=postgres://user:pass@localhost:5432/db_name?sslmode=disable
 .PHONY: migrate-up
 migrate-up: $(MIGRATE) ## Apply all (or N up) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
- 	migrate  -database $(PG_DSN) -path=migrations up ${NN}
+ 	migrate  -database $(PG_DSN) -path=migrations up $${N}
 
 .PHONY: migrate-down
 migrate-down: $(MIGRATE) ## Apply all (or N down) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
- 	migrate  -database $(PG_DSN) -path=migrations down ${NN}
+ 	migrate  -database $(PG_DSN) -path=migrations down $${N}
 
 .PHONY: migrate-drop
 migrate-drop: $(MIGRATE) ## Drop everything inside the database.
