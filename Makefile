@@ -28,3 +28,14 @@ migrate-drop: $(MIGRATE) ## Drop everything inside the database.
 migrate-create: $(MIGRATE) ## Create a set of up/down migrations with a specified name.
 	@ read -p "Please provide name for the migration: " Name; \
 	migrate create -ext sql -dir migrations $${Name}
+
+# ~~~ Test Fixtures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PATH_TO_FIXTURES=test/fixtures
+
+.PHONY: fixtures-load
+fixtures-load: $(TESTFIXTURES) ## Load a set of fixtures to database.
+	testfixtures --dangerous-no-test-database-check -d postgres -c "$(PG_DSN)" -D $(PATH_TO_FIXTURES)
+
+.PHONY: fixtures-dump
+fixtures-dump: $(TESTFIXTURES) ## Dump a set of fixtures from the database.
+	testfixtures --dangerous-no-test-database-check -d postgres -c "$(PG_DSN)" -D $(PATH_TO_FIXTURES)

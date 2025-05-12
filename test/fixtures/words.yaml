@@ -1,0 +1,13 @@
+# words.yml
+- id: 1
+  word: город
+  created_at: 2025-05-11 15:51:40
+- id: 2
+  word: ломка
+  created_at: 2025-05-11 15:51:40
+- id: 3
+  word: монах
+  created_at: 2025-05-11 15:51:40
+- id: 4
+  word: фондю
+  created_at: 2025-05-11 15:51:40

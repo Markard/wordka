@@ -1,0 +1,19 @@
+# users.yml
+- id: 1
+  name: TestName1
+  email: test@gmail.com
+  password: $2a$12$NHANgixdRTJS86hViAKkVeIDetVpzrOwsjfyigAmY1LMoFUx1BqAG
+  created_at: 2025-05-11 15:51:40
+  updated_at: 2025-05-11 15:51:40
+- id: 2
+  name: TestName2
+  email: test2@gmail.com
+  password: $2a$12$NHANgixdRTJS86hViAKkVeIDetVpzrOwsjfyigAmY1LMoFUx1BqAG
+  created_at: 2025-05-11 15:51:40
+  updated_at: 2025-05-11 15:51:40
+- id: 3
+  name: TestName3
+  email: test3@gmail.com
+  password: $2a$12$NHANgixdRTJS86hViAKkVeIDetVpzrOwsjfyigAmY1LMoFUx1BqAG
+  created_at: 2025-05-11 15:51:40
+  updated_at: 2025-05-11 15:51:40

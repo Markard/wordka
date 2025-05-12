@@ -1,0 +1,91 @@
+# guesses.yml
+- id: 1
+  guess_id: 1
+  letter: "г"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 2
+  guess_id: 1
+  letter: "о"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
+- id: 3
+  guess_id: 1
+  letter: "р"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 4
+  guess_id: 1
+  letter: "о"
+  is_in_word: true
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 5
+  guess_id: 1
+  letter: "д"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 6
+  guess_id: 2
+  letter: "ф"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 7
+  guess_id: 2
+  letter: "о"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
+- id: 8
+  guess_id: 2
+  letter: "н"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 9
+  guess_id: 2
+  letter: "д"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 10
+  guess_id: 2
+  letter: "ю"
+  is_in_word: false
+  is_correct_position: false
+  created_at: 2025-05-11 15:51:40
+- id: 11
+  guess_id: 3
+  letter: "л"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
+- id: 12
+  guess_id: 3
+  letter: "о"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
+- id: 13
+  guess_id: 3
+  letter: "м"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
+- id: 14
+  guess_id: 3
+  letter: "к"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
+- id: 15
+  guess_id: 3
+  letter: "а"
+  is_in_word: true
+  is_correct_position: true
+  created_at: 2025-05-11 15:51:40
