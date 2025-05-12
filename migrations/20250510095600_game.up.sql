@@ -24,6 +24,7 @@ CREATE TABLE "games"
     FOREIGN KEY ("word_id") REFERENCES "words" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         NOT DEFERRABLE INITIALLY IMMEDIATE
 );
+CREATE INDEX "idx__games__user_id__is_playing" ON "games" ("user_id", "is_playing");
 
 CREATE TABLE "guesses"
 (
@@ -39,6 +40,7 @@ CREATE TABLE "letters"
 (
     "id"                  BIGSERIAL    NOT NULL,
     "guess_id"            BIGINT       NOT NULL,
+    "letter"              VARCHAR(1)   NOT NULL,
     "is_in_word"          BOOLEAN      NOT NULL,
     "is_correct_position" BOOLEAN      NOT NULL,
     "created_at"          TIMESTAMP(0) NOT NULL,
