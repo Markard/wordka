@@ -10,6 +10,7 @@ import (
 	"github.com/Markard/wordka/internal/repo"
 	"github.com/Markard/wordka/internal/usecase"
 	"github.com/Markard/wordka/internal/usecase/auth"
+	"github.com/Markard/wordka/internal/usecase/game"
 	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
@@ -57,7 +58,7 @@ func Run(setup *config.Setup) {
 	jwtService := serviceJwt.NewService(setup.Env.ES256PrivateKey, setup.Env.ES256PublicKey)
 	useCases := &usecase.UseCases{
 		AuthUseCase: auth.NewAuth(authRepo, jwtService),
-		GameUseCase: usecase.NewGameUseCase(gameRepo),
+		GameUseCase: game.NewGameUseCase(gameRepo),
 	}
 
 	// Middleware

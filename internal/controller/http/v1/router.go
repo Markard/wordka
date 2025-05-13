@@ -22,7 +22,7 @@ func CreateRouter(
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.JwtAuthenticator)
 
-		r.Mount("/games", game.CreateRouter(logger, val))
+		r.Mount("/games", game.CreateRouter(logger, val, useCases.GameUseCase))
 	})
 
 	return r
