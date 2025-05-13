@@ -47,3 +47,15 @@ type Letter struct {
 	IsCorrectPosition bool      `bun:"is_correct_position,notnull"`
 	CreatedAt         time.Time `bun:"created_at,notnull"`
 }
+
+func NewGame(word *Word, currentUser *User) *Game {
+	now := time.Now()
+
+	return &Game{
+		UserId:    currentUser.Id,
+		WordId:    word.Id,
+		IsPlaying: true,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+}

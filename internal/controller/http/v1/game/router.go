@@ -10,12 +10,13 @@ import (
 func CreateRouter(
 	logger logger.Interface,
 	val *validator.Validate,
-	useCase *game.GameUseCase,
+	useCase *game.UseCase,
 ) *chi.Mux {
 	r := chi.NewRouter()
 	c := NewController(useCase, logger, val)
 
 	r.Get("/current", c.GetCurrentGame)
+	r.Post("/current", c.CreateGame)
 
 	return r
 }

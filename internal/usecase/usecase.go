@@ -7,5 +7,5 @@ import (
 
 type UseCases struct {
 	AuthUseCase *auth.UseCase
-	GameUseCase *game.GameUseCase
+	GameUseCase *game.UseCase
 }

@@ -19,7 +19,7 @@ type Response struct {
 }
 
 func NewResponse(game *entity.Game) *Response {
-	var guesses []*Guess
+	guesses := make([]*Guess, 0)
 	for _, g := range game.Guesses {
 		var letters []*Letter
 		for _, l := range g.Letters {
