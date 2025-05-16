@@ -1,4 +1,4 @@
-package validator
+package httpserver
 
 import (
 	"github.com/go-playground/validator/v10"
