@@ -5,14 +5,14 @@ import (
 	"github.com/Markard/wordka/internal/controller/http/v1/game"
 	"github.com/Markard/wordka/internal/infra/middleware"
 	"github.com/Markard/wordka/internal/usecase"
+	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
 )
 
 func CreateRouter(
 	logger logger.Interface,
-	val *validator.Validate,
+	val httpserver.ProjectValidator,
 	middlewares *middleware.Middlewares,
 	useCases *usecase.UseCases,
 ) *chi.Mux {

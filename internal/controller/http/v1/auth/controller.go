@@ -18,7 +18,7 @@ type Controller struct {
 	validator httpserver.ProjectValidator
 }
 
-func NewController(useCase *auth.UseCase, logger logger.Interface, validator *validator.Validate) *Controller {
+func NewController(useCase *auth.UseCase, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
 	return &Controller{useCase: useCase, logger: logger, validator: validator}
 }
 
@@ -57,7 +57,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := c.useCase.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
 		if errors.As(err, &auth.ErrUserNotFound{}) {
-			_ = render.Render(w, r, response.ErrIncorrectCredentials(err))
+			_ = render.Render(w, r, response.ErrIncorrectCredentials())
 		} else {
 			_ = render.Render(w, r, response.ErrInternalServer())
 			c.logger.Error(err)

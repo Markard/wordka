@@ -58,7 +58,7 @@ func Authenticator(tv TokenVerifier, up UserProvider) func(http.Handler) http.Ha
 
 			user, errUserFindById := up.FindById(token.Sub)
 			if errUserFindById != nil {
-				_ = render.Render(w, r, response.ErrUnauthorized(errUserFindById))
+				_ = render.Render(w, r, response.ErrUnauthorized())
 				return
 			}
 

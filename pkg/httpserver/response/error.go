@@ -39,7 +39,6 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 
 func ErrNotFound(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusNotFound,
 		StatusText:     "Not found",
 		ErrorText:      err.Error(),
