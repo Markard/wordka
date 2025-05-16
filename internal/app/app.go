@@ -54,7 +54,7 @@ func Run(env *config.Env, cfg *config.Config) {
 
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
-	http.SetupRouter(httpServer.Router, cfg, lgr, val.Validator, auth)
+	http.SetupRouter(httpServer.Router, cfg, lgr, val, auth)
 
 	// Start Http Server
 	lgr.Info("app - Run - httpServer.Start")

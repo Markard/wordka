@@ -3,15 +3,11 @@ package response
 import (
 	"fmt"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
-	"github.com/iancoleman/strcase"
 	"net/http"
-	"strings"
 )
 
 type ErrResponse struct {
-	Err            error `json:"-"` // low-level runtime error
-	HTTPStatusCode int   `json:"-"` // http response status code
+	HTTPStatusCode int `json:"-"` // http response status code
 
 	StatusText string `json:"status"`          // user-level status message
 	AppCode    int64  `json:"code,omitempty"`  // application-specific error code
@@ -21,6 +17,13 @@ type ErrResponse struct {
 type ValidationErr struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
+}
+
+func NewValidationErr(tag, fieldForErrMsg, param, message, field string) *ValidationErr {
+	return &ValidationErr{
+		Field:   field,
+		Message: msgForTag(tag, fieldForErrMsg, param, message),
+	}
 }
 
 type ValidationErrResponse struct {
@@ -36,7 +39,6 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 
 func ErrConflict(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusConflict,
 		StatusText:     "Conflict",
 		ErrorText:      err.Error(),
@@ -45,16 +47,14 @@ func ErrConflict(err error) render.Renderer {
 
 func ErrInvalidJson(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     "Invalid JSON",
 		ErrorText:      err.Error(),
 	}
 }
 
-func ErrUnauthorized(err error) render.Renderer {
+func ErrUnauthorized() render.Renderer {
 	return &ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusUnauthorized,
 		StatusText:     "Authentication required",
 		ErrorText: "Access to this resource requires authentication. Please provide a valid JWT token in the " +
@@ -62,76 +62,48 @@ func ErrUnauthorized(err error) render.Renderer {
 	}
 }
 
-func ErrIncorrectCredentials(err error) render.Renderer {
+func ErrIncorrectCredentials() render.Renderer {
 	return &ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusUnauthorized,
 		StatusText:     "Authorization failed",
 		ErrorText:      "The credentials provided are incorrect.",
 	}
 }
 
-func ErrInternalServer(err error) render.Renderer {
+func ErrInternalServer() render.Renderer {
 	return &ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusInternalServerError,
 		StatusText:     "Internal Server Error",
 		ErrorText:      "Internal Server Error.",
 	}
 }
 
-func ErrValidation(err error) render.Renderer {
-	validationErrors := err.(validator.ValidationErrors)
-	errorsAsSlice := make([]*ValidationErr, 0, len(validationErrors))
-	for _, validationError := range validationErrors {
-		errorsAsSlice = append(
-			errorsAsSlice,
-			&ValidationErr{
-				Field:   validationError.Field(),
-				Message: msgForTag(validationError),
-			},
-		)
-	}
-
+func ErrValidation(errors []*ValidationErr) render.Renderer {
 	return &ValidationErrResponse{
 		ErrResponse: &ErrResponse{
-			Err:            err,
 			HTTPStatusCode: 400,
 			StatusText:     "Validation failed.",
 			ErrorText:      "",
 		},
-		ErrorTexts: errorsAsSlice,
+		ErrorTexts: errors,
 	}
 }
 
-func msgForTag(fieldError validator.FieldError) string {
-	field := formatFieldForMsg(fieldError)
-
-	switch fieldError.Tag() {
+func msgForTag(tag, fieldForErrMsg, param, originErrMessage string) string {
+	switch tag {
 	case "required":
-		return fmt.Sprintf("The '%s' field is required.", field)
+		return fmt.Sprintf("The '%s' field is required.", fieldForErrMsg)
 	case "min":
-		return fmt.Sprintf("The '%s' field must be at least %v.", field, fieldError.Param())
+		return fmt.Sprintf("The '%s' field must be at least %v.", fieldForErrMsg, param)
 	case "max":
-		return fmt.Sprintf("The '%s' field may not be greater than %v.", field, fieldError.Param())
+		return fmt.Sprintf("The '%s' field may not be greater than %v.", fieldForErrMsg, param)
 	case "email":
-		return fmt.Sprintf("The '%s' field must be a valid email address.", field)
+		return fmt.Sprintf("The '%s' field must be a valid email address.", fieldForErrMsg)
 	case "validate_password":
 		return fmt.Sprintf(
 			"The '%s' field must contains at least one uppercase letter, one lowercase letter, one number and one special character.",
-			field,
+			fieldForErrMsg,
 		)
 	}
-	return fieldError.Error()
-}
-
-func formatFieldForMsg(fieldError validator.FieldError) string {
-	fields := strings.Split(fieldError.Namespace(), ".")
-	fields = fields[1:]
-	snakeCasedFields := make([]string, 0, len(fields))
-	for _, field := range fields {
-		snakeCasedFields = append(snakeCasedFields, strcase.ToSnake(field))
-	}
-
-	return strings.Join(snakeCasedFields, ".")
+	return originErrMessage
 }

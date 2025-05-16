@@ -5,20 +5,20 @@ import (
 	"github.com/Markard/wordka/internal/controller/http/v1/auth/login"
 	"github.com/Markard/wordka/internal/controller/http/v1/auth/registration"
 	"github.com/Markard/wordka/internal/usecase"
+	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/httpserver/response"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 type Controller struct {
 	auth      *usecase.Auth
 	logger    logger.Interface
-	validator *validator.Validate
+	validator httpserver.ProjectValidator
 }
 
-func NewController(auth *usecase.Auth, logger logger.Interface, validator *validator.Validate) *Controller {
+func NewController(auth *usecase.Auth, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
 	return &Controller{auth: auth, logger: logger, validator: validator}
 }
 
@@ -36,7 +36,7 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 			_ = render.Render(w, r, response.ErrConflict(err))
 			return
 		}
-		_ = render.Render(w, r, response.ErrInternalServer(err))
+		_ = render.Render(w, r, response.ErrInternalServer())
 		c.logger.Error(err)
 		return
 	}
@@ -57,9 +57,9 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := c.auth.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
 		if errors.As(err, &usecase.ErrUserNotFound{}) {
-			_ = render.Render(w, r, response.ErrIncorrectCredentials(err))
+			_ = render.Render(w, r, response.ErrIncorrectCredentials())
 		} else {
-			_ = render.Render(w, r, response.ErrInternalServer(err))
+			_ = render.Render(w, r, response.ErrInternalServer())
 			c.logger.Error(err)
 		}
 		return
