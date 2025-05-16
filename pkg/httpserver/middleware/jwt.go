@@ -61,12 +61,12 @@ func verify(tv TokenVerifier, findTokenFns ...func(r *http.Request) string) func
 			ctx = newContext(ctx, token, err)
 
 			if err != nil {
-				_ = render.Render(w, r, response.ErrUnauthorized(err))
+				_ = render.Render(w, r, response.ErrUnauthorized())
 				return
 			}
 
 			if token == nil {
-				_ = render.Render(w, r, response.ErrUnauthorized(err))
+				_ = render.Render(w, r, response.ErrUnauthorized())
 				return
 			}
 

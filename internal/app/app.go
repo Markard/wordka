@@ -10,7 +10,6 @@ import (
 	"github.com/Markard/wordka/pkg/jwtauth"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
-	"github.com/Markard/wordka/pkg/validator"
 	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
@@ -33,7 +32,7 @@ func Run(env *config.Env, cfg *config.Config) {
 	lgr := logger.New(cfg.Log.Level, cfg.Log.CallerSkipFrameCount, logFile)
 
 	// Validator
-	val, err := validator.NewValidator()
+	val, err := httpserver.NewValidator()
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -55,7 +54,7 @@ func Run(env *config.Env, cfg *config.Config) {
 
 	// HTTP Server
 	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
-	http.SetupRouter(httpServer.Router, cfg, lgr, val.Validator, auth)
+	http.SetupRouter(httpServer.Router, cfg, lgr, val, auth)
 
 	// Start Http Server
 	lgr.Info("app - Run - httpServer.Start")

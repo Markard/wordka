@@ -2,17 +2,17 @@ package registration
 
 import (
 	"encoding/json"
+	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/httpserver/response"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 type Converter struct {
-	validator *validator.Validate
+	validator httpserver.ProjectValidator
 }
 
-func NewConverter(validator *validator.Validate) *Converter {
+func NewConverter(validator httpserver.ProjectValidator) *Converter {
 	return &Converter{validator: validator}
 }
 

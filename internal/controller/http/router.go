@@ -4,11 +4,11 @@ import (
 	"github.com/Markard/wordka/config"
 	"github.com/Markard/wordka/internal/controller/http/v1/auth"
 	"github.com/Markard/wordka/internal/usecase"
+	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
@@ -16,7 +16,7 @@ func SetupRouter(
 	router *chi.Mux,
 	cfg *config.Config,
 	logger logger.Interface,
-	val *validator.Validate,
+	val httpserver.ProjectValidator,
 	authUC *usecase.Auth,
 ) {
 	router.Use(logger.RequestLogger)
