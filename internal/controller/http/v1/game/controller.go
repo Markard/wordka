@@ -91,7 +91,8 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Sprintln(currentGame)
 
-	render.JSON(w, r, "Hello guess")
+	resp := currentgame.NewResponse(currentGame)
+	render.Status(r, http.StatusCreated)
+	render.JSON(w, r, resp)
 }

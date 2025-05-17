@@ -67,9 +67,11 @@ func (g *Game) AddGuess(word *Word) *Guess {
 	if guess.WordId == g.WordId {
 		g.IsPlaying = false
 		g.IsWon.Bool = true
+		g.IsWon.Valid = true
 	} else if len(g.Guesses) >= int(g.GuessLimit) {
 		g.IsPlaying = false
 		g.IsWon.Bool = false
+		g.IsWon.Valid = true
 	}
 
 	return guess
