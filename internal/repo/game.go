@@ -3,8 +3,13 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/Markard/wordka/internal/entity"
 	"github.com/uptrace/bun"
+)
+
+var (
+	ErrCurrentGameNotFound = errors.New("current game not found")
 )
 
 type GameRepository struct {
@@ -23,14 +28,8 @@ func (r *GameRepository) FindCurrentGame(currentUser *entity.User) (*entity.Game
 	}
 
 	game := &entity.Game{}
-	errSelect := tx.NewSelect().
-		Model(game).
-		Relation("Word").
-		Relation("Guesses").
-		Relation("Guesses.Word").
-		Where("user_id = ?", currentUser.Id).
-		Where("is_playing = ?", true).
-		Scan(ctx)
+	sq := tx.NewSelect()
+	errSelect := getSelectQueryFindCurrentGame(sq, game, currentUser.Id).Scan(ctx)
 
 	if errSelect != nil {
 		_ = tx.Rollback()
@@ -95,7 +94,7 @@ func (r *GameRepository) FindWord(word string) (*entity.Word, error) {
 	return &w, nil
 }
 
-func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word *entity.Word) (*entity.Game, error) {
+func (r *GameRepository) AddGuessForCurrentGame(currentUser *entity.User, word *entity.Word) (*entity.Game, error) {
 	ctx := context.Background()
 	tx, err := r.pgDb.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
@@ -103,16 +102,13 @@ func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word *entity.
 	}
 
 	currentGame := &entity.Game{}
-	errSelect := tx.NewSelect().
-		Model(currentGame).
-		Relation("Word").
-		Relation("Guesses").
-		Relation("Guesses.Word").
-		Where("user_id = ?", user.Id).
-		Where("is_playing = ?", true).
-		Scan(ctx)
+	sq := tx.NewSelect()
+	errSelect := getSelectQueryFindCurrentGame(sq, currentGame, currentUser.Id).Scan(ctx)
 	if errSelect != nil {
 		_ = tx.Rollback()
+		if currentGame.Id == 0 {
+			return nil, ErrCurrentGameNotFound
+		}
 		return nil, errSelect
 	}
 
@@ -126,4 +122,15 @@ func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word *entity.
 	_ = tx.Commit()
 
 	return currentGame, nil
+}
+
+func getSelectQueryFindCurrentGame(sq *bun.SelectQuery, model *entity.Game, userId int64) *bun.SelectQuery {
+	sq.
+		Model(model).
+		Relation("Word").
+		Relation("Guesses").
+		Relation("Guesses.Word").
+		Where("user_id = ?", userId).
+		Where("is_playing = ?", true)
+	return sq
 }

@@ -1,7 +1,9 @@
 package game
 
 import (
+	"errors"
 	"github.com/Markard/wordka/internal/entity"
+	"github.com/Markard/wordka/internal/repo"
 )
 
 type IGameRepository interface {
@@ -65,6 +67,9 @@ func (p *UseCase) Guess(user *entity.User, wordStr string) (*entity.Game, error)
 
 	game, errAddGuess := p.repository.AddGuessForCurrentGame(user, word)
 	if errAddGuess != nil {
+		if errors.Is(errAddGuess, repo.ErrCurrentGameNotFound) {
+			return nil, ErrCurrentGameNotFound{}
+		}
 		return nil, errAddGuess
 	}
 
