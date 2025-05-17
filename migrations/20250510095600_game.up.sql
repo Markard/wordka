@@ -31,22 +31,12 @@ CREATE TABLE "guesses"
 (
     "id"         BIGSERIAL    NOT NULL,
     "game_id"    BIGINT       NOT NULL,
+    "word_id"    INT          NOT NULL,
     "created_at" TIMESTAMP(0) NOT NULL,
     CONSTRAINT "pidx__guesses__id" PRIMARY KEY ("id"),
     FOREIGN KEY ("game_id") REFERENCES "games" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
-        NOT DEFERRABLE INITIALLY IMMEDIATE
-);
-
-CREATE TABLE "letters"
-(
-    "id"                  BIGSERIAL    NOT NULL,
-    "guess_id"            BIGINT       NOT NULL,
-    "letter"              VARCHAR(1)   NOT NULL,
-    "is_in_word"          BOOLEAN      NOT NULL,
-    "is_correct_position" BOOLEAN      NOT NULL,
-    "created_at"          TIMESTAMP(0) NOT NULL,
-    CONSTRAINT "pidx__letters__id" PRIMARY KEY ("id"),
-    FOREIGN KEY ("guess_id") REFERENCES "guesses" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
+        NOT DEFERRABLE INITIALLY IMMEDIATE,
+    FOREIGN KEY ("word_id") REFERENCES "games" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         NOT DEFERRABLE INITIALLY IMMEDIATE
 );
 

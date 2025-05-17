@@ -26,7 +26,7 @@ type Game struct {
 	UpdatedAt  time.Time `bun:"updated_at,notnull"`
 
 	Guesses []*Guess `bun:"rel:has-many,join:id=game_id"`
-	Word    Word     `bun:"rel:belongs-to,join:word_id=id"`
+	Word    *Word    `bun:"rel:belongs-to,join:word_id=id"`
 }
 
 type Guess struct {
@@ -34,20 +34,10 @@ type Guess struct {
 
 	Id        int64     `bun:"id,pk,autoincrement"`
 	GameId    int64     `bun:"game_id,notnull"`
+	WordId    int       `bun:"word_id,notnull"`
 	CreatedAt time.Time `bun:"created_at,notnull"`
 
-	Letters []*Letter `bun:"rel:has-many,join:id=guess_id"`
-}
-
-type Letter struct {
-	bun.BaseModel `bun:"table:letters"`
-
-	Id                int64     `bun:"id,pk,autoincrement"`
-	GuessId           int64     `bun:"guess_id,notnull"`
-	Letter            string    `bun:"letter,notnull"`
-	IsInWord          bool      `bun:"is_in_word,notnull"`
-	IsCorrectPosition bool      `bun:"is_correct_position,notnull"`
-	CreatedAt         time.Time `bun:"created_at,notnull"`
+	Word *Word `bun:"rel:belongs-to,join:word_id=id"`
 }
 
 func NewGame(word *Word, currentUser *User) *Game {
@@ -64,23 +54,18 @@ func NewGame(word *Word, currentUser *User) *Game {
 	}
 }
 
-func (g *Game) Guess(guessWord string) *Guess {
-	now := time.Now()
-	guess := &Guess{GameId: g.Id, CreatedAt: now}
-	for rPos, r := range []rune(guessWord) {
-		l := &Letter{Letter: string(r), CreatedAt: now}
-		for rwPos, rw := range []rune(g.Word.Word) {
-			if rw == r {
-				l.IsInWord = true
-				if rwPos == rPos {
-					l.IsCorrectPosition = true
-				}
-			}
-		}
-
-		guess.Letters = append(guess.Letters, l)
+func (g *Game) AddGuess(word *Word) *Guess {
+	guess := &Guess{
+		GameId:    g.Id,
+		CreatedAt: time.Now(),
+		WordId:    word.Id,
+		Word:      word,
 	}
 	g.Guesses = append(g.Guesses, guess)
 
 	return guess
+}
+
+func (w *Word) AsRunes() []rune {
+	return []rune(w.Word)
 }

@@ -27,7 +27,7 @@ func (r *GameRepository) FindCurrentGame(currentUser *entity.User) (*entity.Game
 		Model(game).
 		Relation("Word").
 		Relation("Guesses").
-		Relation("Guesses.Letters").
+		Relation("Guesses.Word").
 		Where("user_id = ?", currentUser.Id).
 		Where("is_playing = ?", true).
 		Scan(ctx)
@@ -95,7 +95,7 @@ func (r *GameRepository) FindWord(word string) (*entity.Word, error) {
 	return &w, nil
 }
 
-func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word string) (*entity.Game, error) {
+func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word *entity.Word) (*entity.Game, error) {
 	ctx := context.Background()
 	tx, err := r.pgDb.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
@@ -107,7 +107,7 @@ func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word string) 
 		Model(currentGame).
 		Relation("Word").
 		Relation("Guesses").
-		Relation("Guesses.Letters").
+		Relation("Guesses.Word").
 		Where("user_id = ?", user.Id).
 		Where("is_playing = ?", true).
 		Scan(ctx)
@@ -116,20 +116,11 @@ func (r *GameRepository) AddGuessForCurrentGame(user *entity.User, word string) 
 		return nil, errSelect
 	}
 
-	guess := currentGame.Guess(word)
+	guess := currentGame.AddGuess(word)
 	_, errInsert := tx.NewInsert().Model(guess).Returning("id").Exec(ctx)
 	if errInsert != nil {
 		_ = tx.Rollback()
 		return nil, errInsert
-	}
-
-	for _, letter := range guess.Letters {
-		letter.GuessId = guess.Id
-	}
-	_, errBulkInsert := tx.NewInsert().Model(&guess.Letters).Returning("id").Exec(ctx)
-	if errBulkInsert != nil {
-		_ = tx.Rollback()
-		return nil, errBulkInsert
 	}
 
 	_ = tx.Commit()

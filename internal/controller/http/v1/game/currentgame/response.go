@@ -20,12 +20,21 @@ type Response struct {
 
 func NewResponse(game *entity.Game) *Response {
 	guesses := make([]*Guess, 0)
+	guess := &Guess{}
 	for _, g := range game.Guesses {
-		var letters []*Letter
-		for _, l := range g.Letters {
-			letters = append(letters, &Letter{Letter: l.Letter, IsInWord: l.IsInWord, IsCorrectPosition: l.IsCorrectPosition})
+		for wPos, wr := range g.Word.AsRunes() {
+			l := &Letter{Letter: string(wr)}
+			for swPos, swr := range game.Word.AsRunes() {
+				if swr == wr {
+					l.IsInWord = true
+					if swPos == wPos {
+						l.IsCorrectPosition = true
+					}
+				}
+			}
+			guess.Letters = append(guess.Letters, l)
 		}
-		guesses = append(guesses, &Guess{Letters: letters})
+		guesses = append(guesses, guess)
 	}
 	return &Response{Guesses: guesses}
 }
