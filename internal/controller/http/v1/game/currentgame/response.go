@@ -15,6 +15,7 @@ type Guess struct {
 }
 
 type Response struct {
+	IsWon   *bool    `json:"is_won"`
 	Guesses []*Guess `json:"guesses"`
 }
 
@@ -36,5 +37,11 @@ func NewResponse(game *entity.Game) *Response {
 		}
 		guesses = append(guesses, guess)
 	}
-	return &Response{Guesses: guesses}
+
+	resp := &Response{Guesses: guesses}
+	if game.IsWon.Valid {
+		resp.IsWon = &game.IsWon.Bool
+	}
+
+	return resp
 }

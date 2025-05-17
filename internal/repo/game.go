@@ -119,6 +119,14 @@ func (r *GameRepository) AddGuessForCurrentGame(currentUser *entity.User, word *
 		return nil, errInsert
 	}
 
+	if currentGame.IsPlaying == false {
+		_, errUpdate := tx.NewUpdate().Model(currentGame).Where("id = ?", currentGame.Id).Exec(ctx)
+		if errUpdate != nil {
+			_ = tx.Rollback()
+			return nil, errUpdate
+		}
+	}
+
 	_ = tx.Commit()
 
 	return currentGame, nil

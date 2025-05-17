@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"database/sql"
 	"github.com/uptrace/bun"
 	"time"
 )
@@ -16,14 +17,14 @@ type Word struct {
 type Game struct {
 	bun.BaseModel `bun:"table:games"`
 
-	Id         int64     `bun:"id,pk,autoincrement"`
-	UserId     int64     `bun:"user_id,notnull"`
-	WordId     int       `bun:"word_id,notnull"`
-	GuessLimit int8      `bun:"guess_limit,notnull"`
-	IsPlaying  bool      `bun:"is_playing,notnull,default:true"`
-	IsWon      bool      `bun:"is_won,notnull"`
-	CreatedAt  time.Time `bun:"created_at,notnull"`
-	UpdatedAt  time.Time `bun:"updated_at,notnull"`
+	Id         int64        `bun:"id,pk,autoincrement"`
+	UserId     int64        `bun:"user_id,notnull"`
+	WordId     int          `bun:"word_id,notnull"`
+	GuessLimit int8         `bun:"guess_limit,notnull"`
+	IsPlaying  bool         `bun:"is_playing,notnull,default:true"`
+	IsWon      sql.NullBool `bun:"is_won"`
+	CreatedAt  time.Time    `bun:"created_at,notnull"`
+	UpdatedAt  time.Time    `bun:"updated_at,notnull"`
 
 	Guesses []*Guess `bun:"rel:has-many,join:id=game_id"`
 	Word    *Word    `bun:"rel:belongs-to,join:word_id=id"`
@@ -62,6 +63,14 @@ func (g *Game) AddGuess(word *Word) *Guess {
 		Word:      word,
 	}
 	g.Guesses = append(g.Guesses, guess)
+
+	if guess.WordId == g.WordId {
+		g.IsPlaying = false
+		g.IsWon.Bool = true
+	} else if len(g.Guesses) >= int(g.GuessLimit) {
+		g.IsPlaying = false
+		g.IsWon.Bool = false
+	}
 
 	return guess
 }
