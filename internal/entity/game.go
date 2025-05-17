@@ -59,3 +59,7 @@ func NewGame(word *Word, currentUser *User) *Game {
 		UpdatedAt: now,
 	}
 }
+
+func (g *Game) Guess(word string) {
+
+}

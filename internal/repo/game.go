@@ -77,3 +77,19 @@ func (r *GameRepository) FindRandomWord() (*entity.Word, error) {
 
 	return &word, nil
 }
+
+func (r *GameRepository) FindWord(word string) (*entity.Word, error) {
+	ctx := context.Background()
+	w := entity.Word{}
+
+	errSelect := r.pgDb.
+		NewSelect().
+		Model(&w).
+		Where("word = ?", word).
+		Scan(ctx)
+	if errSelect != nil {
+		return nil, errSelect
+	}
+
+	return &w, nil
+}

@@ -26,6 +26,17 @@ func NewValidationErr(tag, fieldForErrMsg, param, message, field string) *Valida
 	}
 }
 
+func NewCustomValidationErrs(field, message string) []*ValidationErr {
+	err := &ValidationErr{
+		Field:   field,
+		Message: message,
+	}
+	var valErrs []*ValidationErr
+	valErrs = append(valErrs, err)
+
+	return valErrs
+}
+
 type ValidationErrResponse struct {
 	*ErrResponse
 
@@ -105,6 +116,8 @@ func msgForTag(tag, fieldForErrMsg, param, originErrMessage string) string {
 		return fmt.Sprintf("The '%s' field must be at least %v.", fieldForErrMsg, param)
 	case "max":
 		return fmt.Sprintf("The '%s' field may not be greater than %v.", fieldForErrMsg, param)
+	case "len":
+		return fmt.Sprintf("The '%s' field must be %v characters.", fieldForErrMsg, param)
 	case "email":
 		return fmt.Sprintf("The '%s' field must be a valid email address.", fieldForErrMsg)
 	case "validate_password":

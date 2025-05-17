@@ -2,7 +2,9 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Markard/wordka/internal/controller/http/v1/game/currentgame"
+	"github.com/Markard/wordka/internal/controller/http/v1/game/guess"
 	"github.com/Markard/wordka/internal/entity"
 	"github.com/Markard/wordka/internal/infra/middleware/jwt"
 	"github.com/Markard/wordka/internal/usecase/game"
@@ -58,4 +60,38 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 	resp := currentgame.NewResponse(currentGame)
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, resp)
+}
+
+func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
+	converter := guess.NewConverter(c.validator)
+	guessReq, converterErr := converter.ValidateAndApply(r)
+	if converterErr != nil {
+		_ = render.Render(w, r, converterErr)
+		return
+	}
+
+	currentUser, _ := r.Context().Value(jwt.CurrentUserCtxKey).(*entity.User)
+	fmt.Printf(currentUser.Email)
+	fmt.Printf(guessReq.Word)
+
+	currentGame, err := c.useCase.Guess(currentUser, guessReq.Word)
+	if err != nil {
+		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
+			_ = render.Render(w, r, response.ErrNotFound(err))
+			return
+		} else if errors.As(err, &game.ErrIncorrectWord{}) {
+			errIncorrectWord := response.NewCustomValidationErrs(
+				"word",
+				"The word must be a Russian noun consisting of exactly 5 letters",
+			)
+			_ = render.Render(w, r, response.ErrValidation(errIncorrectWord))
+			return
+		} else {
+			c.logger.Error(err)
+			return
+		}
+	}
+	fmt.Sprintln(currentGame)
+
+	render.JSON(w, r, "Hello guess")
 }

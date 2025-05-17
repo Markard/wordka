@@ -15,8 +15,9 @@ func CreateRouter(
 	r := chi.NewRouter()
 	c := NewController(useCase, logger, val)
 
-	r.Get("/current", c.GetCurrentGame)
-	r.Post("/current", c.CreateGame)
+	r.Get("/", c.GetCurrentGame)
+	r.Post("/", c.CreateGame)
+	r.Post("/guess", c.Guess)
 
 	return r
 }

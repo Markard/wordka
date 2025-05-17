@@ -9,6 +9,7 @@ type IGameRepository interface {
 	IsCurrentGameExists(currentUser *entity.User) (bool, error)
 	CreateGame(word *entity.Word, currentUser *entity.User) (*entity.Game, error)
 	FindRandomWord() (*entity.Word, error)
+	FindWord(word string) (*entity.Word, error)
 }
 
 type UseCase struct {
@@ -53,4 +54,31 @@ func (p *UseCase) CreateGame(user *entity.User) (*entity.Game, error) {
 	}
 
 	return game, nil
+}
+
+func (p *UseCase) Guess(user *entity.User, word string) (*entity.Game, error) {
+	if !p.is5LetterNoun(word) {
+		return nil, ErrIncorrectWord{}
+	}
+
+	game, err := p.repository.FindCurrentGame(user)
+	if err != nil {
+		if game == nil {
+			return nil, ErrCurrentGameNotFound{}
+		} else {
+			return nil, err
+		}
+	}
+
+	game.Guess(word)
+
+	panic(game)
+
+	return nil, nil
+}
+
+func (p *UseCase) is5LetterNoun(word string) bool {
+	w, _ := p.repository.FindWord(word)
+
+	return w != nil
 }
