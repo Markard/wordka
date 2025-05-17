@@ -10,6 +10,7 @@ type IGameRepository interface {
 	CreateGame(word *entity.Word, currentUser *entity.User) (*entity.Game, error)
 	FindRandomWord() (*entity.Word, error)
 	FindWord(word string) (*entity.Word, error)
+	AddGuessForCurrentGame(user *entity.User, word string) (*entity.Game, error)
 }
 
 type UseCase struct {
@@ -61,20 +62,12 @@ func (p *UseCase) Guess(user *entity.User, word string) (*entity.Game, error) {
 		return nil, ErrIncorrectWord{}
 	}
 
-	game, err := p.repository.FindCurrentGame(user)
-	if err != nil {
-		if game == nil {
-			return nil, ErrCurrentGameNotFound{}
-		} else {
-			return nil, err
-		}
+	game, errAddGuess := p.repository.AddGuessForCurrentGame(user, word)
+	if errAddGuess != nil {
+		return nil, errAddGuess
 	}
 
-	game.Guess(word)
-
-	panic(game)
-
-	return nil, nil
+	return game, nil
 }
 
 func (p *UseCase) is5LetterNoun(word string) bool {

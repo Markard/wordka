@@ -11,13 +11,14 @@ CREATE TABLE "words"
 
 CREATE TABLE "games"
 (
-    "id"         BIGSERIAL    NOT NULL,
-    "user_id"    BIGINT       NOT NULL,
-    "word_id"    INT          NOT NULL,
-    "is_playing" BOOLEAN      NOT NULL DEFAULT TRUE,
-    "is_won"     BOOLEAN,
-    "created_at" TIMESTAMP(0) NOT NULL,
-    "updated_at" TIMESTAMP(0) NOT NULL,
+    "id"          BIGSERIAL    NOT NULL,
+    "user_id"     BIGINT       NOT NULL,
+    "word_id"     INT          NOT NULL,
+    "guess_limit" SMALLINT     NOT NULL,
+    "is_playing"  BOOLEAN      NOT NULL DEFAULT TRUE,
+    "is_won"      BOOLEAN,
+    "created_at"  TIMESTAMP(0) NOT NULL,
+    "updated_at"  TIMESTAMP(0) NOT NULL,
     CONSTRAINT "pidx__games__id" PRIMARY KEY ("id"),
     FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         NOT DEFERRABLE INITIALLY IMMEDIATE,
