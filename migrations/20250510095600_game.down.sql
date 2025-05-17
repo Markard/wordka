@@ -1,5 +1,4 @@
 BEGIN TRANSACTION;
-DROP TABLE "letters";
 DROP TABLE "guesses";
 DROP TABLE "games";
 DROP TABLE "words";
