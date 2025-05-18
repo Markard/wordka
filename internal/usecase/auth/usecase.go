@@ -1,10 +1,10 @@
-package usecase
+package auth
 
 import (
 	"errors"
 	"github.com/Markard/wordka/internal/entity"
+	serviceJwt "github.com/Markard/wordka/internal/infra/service/jwt"
 	"github.com/Markard/wordka/internal/repo"
-	"github.com/Markard/wordka/pkg/jwtauth"
 )
 
 type IAuthRepository interface {
@@ -12,16 +12,16 @@ type IAuthRepository interface {
 	FindBy(email string) (*entity.User, error)
 }
 
-type Auth struct {
-	repository   IAuthRepository
-	tokenService *jwtauth.TokenService
+type UseCase struct {
+	repository IAuthRepository
+	jwtService *serviceJwt.Service
 }
 
-func NewAuth(repository IAuthRepository, tokenService *jwtauth.TokenService) *Auth {
-	return &Auth{repository: repository, tokenService: tokenService}
+func NewAuth(repository IAuthRepository, tokenService *serviceJwt.Service) *UseCase {
+	return &UseCase{repository: repository, jwtService: tokenService}
 }
 
-func (auth *Auth) Register(name string, email string, rawPassword string) (*entity.User, error) {
+func (auth *UseCase) Register(name string, email string, rawPassword string) (*entity.User, error) {
 	user, err := entity.NewUser(name, email, rawPassword)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (auth *Auth) Register(name string, email string, rawPassword string) (*enti
 	return user, nil
 }
 
-func (auth *Auth) Login(email string, password string) (string, error) {
+func (auth *UseCase) Login(email string, password string) (string, error) {
 	user, err := auth.repository.FindBy(email)
 	if err != nil {
 		if user == nil {
@@ -51,7 +51,7 @@ func (auth *Auth) Login(email string, password string) (string, error) {
 		return "", ErrUserNotFound{email}
 	}
 
-	tokenString, err := auth.tokenService.CreateTokenStringWithES256(user.Id)
+	tokenString, err := auth.jwtService.CreateTokenStringWithES256(user.Id)
 	if err != nil {
 		return "", err
 	}

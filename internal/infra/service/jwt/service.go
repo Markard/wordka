@@ -1,4 +1,4 @@
-package jwtauth
+package jwt
 
 import (
 	"crypto/ecdsa"
@@ -6,26 +6,35 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/Markard/wordka/pkg/httpserver/middleware"
 	"github.com/golang-jwt/jwt/v5"
 	"strconv"
 	"time"
 )
 
-type TokenService struct {
+type Token struct {
+	Sub int64
+	Exp time.Time
+	Iat time.Time
+}
+
+func NewToken(sub int64, iat time.Time, exp time.Time) *Token {
+	return &Token{Sub: sub, Iat: iat, Exp: exp}
+}
+
+type Service struct {
 	privateKeyStr string
 	publicKeyStr  string
 }
 
-func NewTokenService(privateKeyStr, publicKeyStr string) *TokenService {
-	return &TokenService{
+func NewService(privateKeyStr, publicKeyStr string) *Service {
+	return &Service{
 		privateKeyStr: privateKeyStr,
 		publicKeyStr:  publicKeyStr,
 	}
 }
 
-func (j TokenService) CreateTokenStringWithES256(userId int64) (string, error) {
-	privateKey, err := j.parseECDSAPrivateKeyStr()
+func (s Service) CreateTokenStringWithES256(userId int64) (string, error) {
+	privateKey, err := s.parseECDSAPrivateKeyStr()
 	if err != nil {
 		return "", err
 	}
@@ -46,8 +55,8 @@ func (j TokenService) CreateTokenStringWithES256(userId int64) (string, error) {
 	return tokenString, nil
 }
 
-func (j TokenService) VerifyTokenStringWithES256(tokenString string) (*middleware.Token, error) {
-	publicKey, err := j.parseECDSAPublicKeyFromPEM()
+func (s Service) VerifyTokenStringWithES256(tokenString string) (*Token, error) {
+	publicKey, err := s.parseECDSAPublicKeyFromPEM()
 	if err != nil {
 		return nil, err
 	}
@@ -85,15 +94,11 @@ func (j TokenService) VerifyTokenStringWithES256(tokenString string) (*middlewar
 		return nil, err
 	}
 
-	return &middleware.Token{
-		Sub: sub,
-		Iat: iat.Time,
-		Exp: exp.Time,
-	}, nil
+	return NewToken(sub, iat.Time, exp.Time), nil
 }
 
-func (j TokenService) parseECDSAPrivateKeyStr() (*ecdsa.PrivateKey, error) {
-	block, _ := pem.Decode([]byte(j.privateKeyStr))
+func (s Service) parseECDSAPrivateKeyStr() (*ecdsa.PrivateKey, error) {
+	block, _ := pem.Decode([]byte(s.privateKeyStr))
 	if block == nil || block.Type != "EC PRIVATE KEY" {
 		return nil, errors.New("invalid PEM block for EC PRIVATE KEY")
 	}
@@ -106,8 +111,8 @@ func (j TokenService) parseECDSAPrivateKeyStr() (*ecdsa.PrivateKey, error) {
 	return key, nil
 }
 
-func (j TokenService) parseECDSAPublicKeyFromPEM() (*ecdsa.PublicKey, error) {
-	block, _ := pem.Decode([]byte(j.publicKeyStr))
+func (s Service) parseECDSAPublicKeyFromPEM() (*ecdsa.PublicKey, error) {
+	block, _ := pem.Decode([]byte(s.publicKeyStr))
 	if block == nil || block.Type != "EC PUBLIC KEY" {
 		return nil, errors.New("invalid PEM block for EC PUBLIC KEY")
 	}

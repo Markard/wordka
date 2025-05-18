@@ -2,7 +2,8 @@ package http
 
 import (
 	"github.com/Markard/wordka/config"
-	"github.com/Markard/wordka/internal/controller/http/v1/auth"
+	"github.com/Markard/wordka/internal/controller/http/v1"
+	projectMiddleware "github.com/Markard/wordka/internal/infra/middleware"
 	"github.com/Markard/wordka/internal/usecase"
 	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/logger"
@@ -14,17 +15,18 @@ import (
 
 func SetupRouter(
 	router *chi.Mux,
-	cfg *config.Config,
+	setup *config.Setup,
 	logger logger.Interface,
 	val httpserver.ProjectValidator,
-	authUC *usecase.Auth,
+	middlewares *projectMiddleware.Middlewares,
+	useCases *usecase.UseCases,
 ) {
 	router.Use(logger.RequestLogger)
 	router.Use(middleware.Recoverer)
-	router.Use(middleware.Timeout(cfg.HttpServer.Timeout))
+	router.Use(middleware.Timeout(setup.Config.HttpServer.Timeout))
 
 	router.Get("/robots.txt", robotsTxt)
-	router.Mount("/v1", auth.GetRouter(logger, val, authUC))
+	router.Mount("/v1", v1.CreateRouter(logger, val, middlewares, useCases))
 }
 
 func robotsTxt(w http.ResponseWriter, r *http.Request) {

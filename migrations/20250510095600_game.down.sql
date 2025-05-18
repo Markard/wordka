@@ -1,0 +1,5 @@
+BEGIN TRANSACTION;
+DROP TABLE "guesses";
+DROP TABLE "games";
+DROP TABLE "words";
+COMMIT;

@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"github.com/Markard/wordka/config"
 	"github.com/Markard/wordka/internal/controller/http"
+	"github.com/Markard/wordka/internal/infra/middleware"
+	"github.com/Markard/wordka/internal/infra/middleware/jwt"
+	serviceJwt "github.com/Markard/wordka/internal/infra/service/jwt"
 	"github.com/Markard/wordka/internal/repo"
 	"github.com/Markard/wordka/internal/usecase"
+	"github.com/Markard/wordka/internal/usecase/auth"
+	"github.com/Markard/wordka/internal/usecase/game"
 	"github.com/Markard/wordka/pkg/httpserver"
-	"github.com/Markard/wordka/pkg/jwtauth"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
 	"github.com/rs/zerolog/log"
@@ -16,9 +20,9 @@ import (
 	"syscall"
 )
 
-func Run(env *config.Env, cfg *config.Config) {
+func Run(setup *config.Setup) {
 	// Initialize logger
-	logFile, err := os.OpenFile(cfg.Log.FilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	logFile, err := os.OpenFile(setup.Config.Log.FilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -29,7 +33,7 @@ func Run(env *config.Env, cfg *config.Config) {
 			log.With().Err(err)
 		}
 	}(logFile)
-	lgr := logger.New(cfg.Log.Level, cfg.Log.CallerSkipFrameCount, logFile)
+	lgr := logger.New(setup.Config.Log.Level, setup.Config.Log.CallerSkipFrameCount, logFile)
 
 	// Validator
 	val, err := httpserver.NewValidator()
@@ -40,21 +44,31 @@ func Run(env *config.Env, cfg *config.Config) {
 	}
 
 	// Repository PostgreSQL
-	db := postgres.New(env.PgDSN, lgr.ZerologLogger())
+	db := postgres.New(setup.Env.PgDSN, lgr.ZerologLogger())
 	defer func() {
 		err := db.Close()
 		if err != nil {
 			lgr.Error(err)
 		}
 	}()
+	authRepo := repo.NewAuthRepository(db)
+	gameRepo := repo.NewGameRepository(db)
 
 	// Use cases
-	tokenService := jwtauth.NewTokenService(env.ES256PrivateKey, env.ES256PublicKey)
-	auth := usecase.NewAuth(repo.NewAuthRepository(db), tokenService)
+	jwtService := serviceJwt.NewService(setup.Env.ES256PrivateKey, setup.Env.ES256PublicKey)
+	useCases := &usecase.UseCases{
+		AuthUseCase: auth.NewAuth(authRepo, jwtService),
+		GameUseCase: game.NewGameUseCase(gameRepo),
+	}
+
+	// Middleware
+	middlewares := &middleware.Middlewares{
+		JwtAuthenticator: jwt.Authenticator(jwtService, authRepo),
+	}
 
 	// HTTP Server
-	httpServer := httpserver.New(cfg.HttpServer.Address, cfg.HttpServer.IdleTimeout)
-	http.SetupRouter(httpServer.Router, cfg, lgr, val, auth)
+	httpServer := httpserver.New(setup.Config.HttpServer.Address, setup.Config.HttpServer.IdleTimeout)
+	http.SetupRouter(httpServer.Router, setup, lgr, val, middlewares, useCases)
 
 	// Start Http Server
 	lgr.Info("app - Run - httpServer.Start")

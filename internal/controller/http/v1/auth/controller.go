@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/Markard/wordka/internal/controller/http/v1/auth/login"
 	"github.com/Markard/wordka/internal/controller/http/v1/auth/registration"
-	"github.com/Markard/wordka/internal/usecase"
+	"github.com/Markard/wordka/internal/usecase/auth"
 	"github.com/Markard/wordka/pkg/httpserver"
 	"github.com/Markard/wordka/pkg/httpserver/response"
 	"github.com/Markard/wordka/pkg/logger"
@@ -13,13 +13,13 @@ import (
 )
 
 type Controller struct {
-	auth      *usecase.Auth
+	useCase   *auth.UseCase
 	logger    logger.Interface
 	validator httpserver.ProjectValidator
 }
 
-func NewController(auth *usecase.Auth, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
-	return &Controller{auth: auth, logger: logger, validator: validator}
+func NewController(useCase *auth.UseCase, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
+	return &Controller{useCase: useCase, logger: logger, validator: validator}
 }
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +30,9 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := c.auth.Register(regRequest.Name, regRequest.Email, regRequest.Password)
+	user, err := c.useCase.Register(regRequest.Name, regRequest.Email, regRequest.Password)
 	if err != nil {
-		if errors.As(err, &usecase.ErrUserAlreadyExists{}) {
+		if errors.As(err, &auth.ErrUserAlreadyExists{}) {
 			_ = render.Render(w, r, response.ErrConflict(err))
 			return
 		}
@@ -54,9 +54,9 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, err := c.auth.Login(loginRequest.Email, loginRequest.Password)
+	tokenString, err := c.useCase.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
-		if errors.As(err, &usecase.ErrUserNotFound{}) {
+		if errors.As(err, &auth.ErrUserNotFound{}) {
 			_ = render.Render(w, r, response.ErrIncorrectCredentials())
 		} else {
 			_ = render.Render(w, r, response.ErrInternalServer())

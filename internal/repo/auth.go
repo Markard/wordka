@@ -44,3 +44,17 @@ func (r AuthRepository) FindBy(email string) (*entity.User, error) {
 
 	return user, nil
 }
+
+func (r AuthRepository) FindById(id int64) (*entity.User, error) {
+	user := &entity.User{}
+	err := r.pgDb.NewSelect().
+		Model(user).
+		Where("id = ?", id).
+		Scan(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
