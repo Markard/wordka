@@ -21,8 +21,8 @@ type Response struct {
 
 func NewResponse(game *entity.Game) *Response {
 	guesses := make([]*Guess, 0)
-	guess := &Guess{}
 	for _, g := range game.Guesses {
+		guess := &Guess{}
 		for wPos, wr := range g.Word.AsRunes() {
 			l := &Letter{Letter: string(wr)}
 			for swPos, swr := range game.Word.AsRunes() {

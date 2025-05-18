@@ -132,6 +132,42 @@ func (r *GameRepository) AddGuessForCurrentGame(currentUser *entity.User, word *
 	return currentGame, nil
 }
 
+func (r *GameRepository) SaveWords(words []string) error {
+	var chunks [][]string
+	chunkSize := 1000
+	for i := 0; i < len(words); i += chunkSize {
+		end := i + chunkSize
+		if end > len(words) {
+			end = len(words)
+		}
+
+		chunks = append(chunks, words[i:end])
+	}
+
+	ctx := context.Background()
+	tx, err := r.pgDb.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
+	if err != nil {
+		return err
+	}
+	for _, chunk := range chunks {
+		var wordsChunk []*entity.Word
+		for _, word := range chunk {
+			wordsChunk = append(wordsChunk, entity.NewWord(word))
+		}
+		_, err := tx.NewInsert().
+			Model(&wordsChunk).
+			Ignore().
+			Exec(ctx)
+		if err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+	_ = tx.Commit()
+
+	return nil
+}
+
 func getSelectQueryFindCurrentGame(sq *bun.SelectQuery, model *entity.Game, userId int64) *bun.SelectQuery {
 	sq.
 		Model(model).

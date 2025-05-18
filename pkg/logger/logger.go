@@ -5,6 +5,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/pkgerrors"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -33,8 +34,13 @@ func New(level string, callerSkipFrameCount int, logFile *os.File) *Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
 	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-	multi := zerolog.MultiLevelWriter(consoleWriter, logFile)
-	logger := zerolog.New(multi).
+	var w io.Writer
+	if logFile != nil {
+		w = zerolog.MultiLevelWriter(consoleWriter, logFile)
+	} else {
+		w = zerolog.ConsoleWriter{Out: os.Stdout}
+	}
+	logger := zerolog.New(w).
 		With().
 		Timestamp().
 		CallerWithSkipFrameCount(zerolog.CallerSkipFrameCount + callerSkipFrameCount).

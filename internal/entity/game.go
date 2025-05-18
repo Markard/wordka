@@ -14,6 +14,28 @@ type Word struct {
 	CreatedAt time.Time `bun:"created_at,notnull"`
 }
 
+func NewWord(word string) *Word {
+	return &Word{
+		Word:      word,
+		CreatedAt: time.Now(),
+	}
+}
+
+func (w *Word) AsRunes() []rune {
+	return []rune(w.Word)
+}
+
+type Guess struct {
+	bun.BaseModel `bun:"table:guesses"`
+
+	Id        int64     `bun:"id,pk,autoincrement"`
+	GameId    int64     `bun:"game_id,notnull"`
+	WordId    int       `bun:"word_id,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull"`
+
+	Word *Word `bun:"rel:belongs-to,join:word_id=id"`
+}
+
 type Game struct {
 	bun.BaseModel `bun:"table:games"`
 
@@ -28,17 +50,6 @@ type Game struct {
 
 	Guesses []*Guess `bun:"rel:has-many,join:id=game_id"`
 	Word    *Word    `bun:"rel:belongs-to,join:word_id=id"`
-}
-
-type Guess struct {
-	bun.BaseModel `bun:"table:guesses"`
-
-	Id        int64     `bun:"id,pk,autoincrement"`
-	GameId    int64     `bun:"game_id,notnull"`
-	WordId    int       `bun:"word_id,notnull"`
-	CreatedAt time.Time `bun:"created_at,notnull"`
-
-	Word *Word `bun:"rel:belongs-to,join:word_id=id"`
 }
 
 func NewGame(word *Word, currentUser *User) *Game {
@@ -75,8 +86,4 @@ func (g *Game) AddGuess(word *Word) *Guess {
 	}
 
 	return guess
-}
-
-func (w *Word) AsRunes() []rune {
-	return []rune(w.Word)
 }
