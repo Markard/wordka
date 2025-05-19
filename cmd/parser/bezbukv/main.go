@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -32,7 +33,10 @@ func (p *FiveLetterNounParser) Parse() []string {
 	for {
 		url := p.getUrl(page)
 		p.logger.Info("Fetching words from %s", url)
-		resp, err := http.Get(url)
+		client := &http.Client{
+			Timeout: time.Second * 3,
+		}
+		resp, err := client.Get(url)
 		if err != nil {
 			p.logger.Fatal(err)
 		}
