@@ -5,8 +5,7 @@ import (
 	"errors"
 	"github.com/Markard/wordka/internal/entity"
 	serviceJwt "github.com/Markard/wordka/internal/infra/service/jwt"
-	"github.com/Markard/wordka/pkg/httpserver/response"
-	"github.com/go-chi/render"
+	"github.com/Markard/wordka/pkg/http/response"
 	"net/http"
 	"strings"
 )
@@ -46,19 +45,21 @@ func Authenticator(tv TokenVerifier, up UserProvider) func(http.Handler) http.Ha
 		hfn := func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			token, err := verifyRequest(tv, r, tokenFromHeader, tokenFromCookie, tokenFromQuery)
+			errMsg := "Access to this resource requires authentication. Please provide a valid JWT token in the " +
+				"Authorization header (Bearer {token}), in the 'jwt' cookie, or as the 'jwt' query parameter."
 			if err != nil {
-				_ = render.Render(w, r, response.ErrUnauthorized())
+				response.ErrHttpError(w, http.StatusUnauthorized, errMsg)
 				return
 			}
 
 			if token == nil {
-				_ = render.Render(w, r, response.ErrUnauthorized())
+				response.ErrHttpError(w, http.StatusUnauthorized, errMsg)
 				return
 			}
 
 			user, errUserFindById := up.FindById(token.Sub)
 			if errUserFindById != nil {
-				_ = render.Render(w, r, response.ErrUnauthorized())
+				response.ErrHttpError(w, http.StatusUnauthorized, errMsg)
 				return
 			}
 

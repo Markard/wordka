@@ -8,8 +8,8 @@ import (
 	"github.com/Markard/wordka/internal/entity"
 	"github.com/Markard/wordka/internal/infra/middleware/jwt"
 	"github.com/Markard/wordka/internal/usecase/game"
-	"github.com/Markard/wordka/pkg/httpserver"
-	"github.com/Markard/wordka/pkg/httpserver/response"
+	"github.com/Markard/wordka/pkg/http/response"
+	"github.com/Markard/wordka/pkg/http/validator"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/render"
 	"net/http"
@@ -18,10 +18,10 @@ import (
 type Controller struct {
 	useCase   *game.UseCase
 	logger    logger.Interface
-	validator httpserver.ProjectValidator
+	validator validator.ProjectValidator
 }
 
-func NewController(useCase *game.UseCase, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
+func NewController(useCase *game.UseCase, logger logger.Interface, validator validator.ProjectValidator) *Controller {
 	return &Controller{useCase: useCase, logger: logger, validator: validator}
 }
 
@@ -29,8 +29,8 @@ func (c *Controller) GetCurrentGame(w http.ResponseWriter, r *http.Request) {
 	currentUser, _ := r.Context().Value(jwt.CurrentUserCtxKey).(*entity.User)
 	currentGame, err := c.useCase.FindCurrentGame(currentUser)
 	if err != nil {
-		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
-			_ = render.Render(w, r, response.ErrNotFound(err))
+		if errors.Is(err, game.ErrCurrentGameNotFound) {
+			response.ErrNotFound(w, err)
 			return
 		} else {
 			c.logger.Error(err)
@@ -48,8 +48,8 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 	currentGame, err := c.useCase.CreateGame(currentUser)
 
 	if err != nil {
-		if errors.As(err, &game.ErrCurrentGameAlreadyExists{}) {
-			_ = render.Render(w, r, response.ErrConflict(err))
+		if errors.Is(err, game.ErrCurrentGameAlreadyExists) {
+			response.ErrConflict(w, err)
 			return
 		} else {
 			c.logger.Error(err)
@@ -64,9 +64,9 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 	converter := guess.NewConverter(c.validator)
-	guessReq, converterErr := converter.ValidateAndApply(r)
-	if converterErr != nil {
-		_ = render.Render(w, r, converterErr)
+	guessReq, valErr := converter.ValidateAndApply(r)
+	if valErr != nil {
+		valErr.ErrValidation(w)
 		return
 	}
 
@@ -76,15 +76,14 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 
 	currentGame, err := c.useCase.Guess(currentUser, guessReq.Word)
 	if err != nil {
-		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
-			_ = render.Render(w, r, response.ErrNotFound(err))
+		if errors.Is(err, game.ErrCurrentGameNotFound) {
+			response.ErrNotFound(w, err)
 			return
-		} else if errors.As(err, &game.ErrIncorrectWord{}) {
-			errIncorrectWord := response.NewCustomValidationErrs(
-				"word",
-				"The word must be a Russian noun consisting of exactly 5 letters",
-			)
-			_ = render.Render(w, r, response.ErrValidation(errIncorrectWord))
+		} else if errors.Is(err, game.ErrIncorrectWord) {
+			response.
+				NewValidationError().
+				AddFieldError("word", "The word must be a Russian noun consisting of exactly 5 letters").
+				ErrValidation(w)
 			return
 		} else {
 			c.logger.Error(err)

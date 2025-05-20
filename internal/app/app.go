@@ -11,7 +11,8 @@ import (
 	"github.com/Markard/wordka/internal/usecase"
 	"github.com/Markard/wordka/internal/usecase/auth"
 	"github.com/Markard/wordka/internal/usecase/game"
-	"github.com/Markard/wordka/pkg/httpserver"
+	"github.com/Markard/wordka/pkg/http/server"
+	"github.com/Markard/wordka/pkg/http/validator"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
 	"github.com/rs/zerolog/log"
@@ -36,7 +37,7 @@ func Run(setup *config.Setup) {
 	lgr := logger.New(setup.Config.Log.Level, setup.Config.Log.CallerSkipFrameCount, logFile)
 
 	// Validator
-	val, err := httpserver.NewValidator()
+	val, err := validator.NewValidator()
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -67,7 +68,7 @@ func Run(setup *config.Setup) {
 	}
 
 	// HTTP Server
-	httpServer := httpserver.New(setup.Config.HttpServer.Address, setup.Config.HttpServer.IdleTimeout)
+	httpServer := server.New(setup.Config.HttpServer.Address, setup.Config.HttpServer.IdleTimeout)
 	http.SetupRouter(httpServer.Router, setup, lgr, val, middlewares, useCases)
 
 	// Start Http Server

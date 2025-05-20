@@ -5,8 +5,8 @@ import (
 	"github.com/Markard/wordka/internal/controller/http/v1/auth/login"
 	"github.com/Markard/wordka/internal/controller/http/v1/auth/registration"
 	"github.com/Markard/wordka/internal/usecase/auth"
-	"github.com/Markard/wordka/pkg/httpserver"
-	"github.com/Markard/wordka/pkg/httpserver/response"
+	"github.com/Markard/wordka/pkg/http/response"
+	"github.com/Markard/wordka/pkg/http/validator"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/render"
 	"net/http"
@@ -15,28 +15,28 @@ import (
 type Controller struct {
 	useCase   *auth.UseCase
 	logger    logger.Interface
-	validator httpserver.ProjectValidator
+	validator validator.ProjectValidator
 }
 
-func NewController(useCase *auth.UseCase, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
+func NewController(useCase *auth.UseCase, logger logger.Interface, validator validator.ProjectValidator) *Controller {
 	return &Controller{useCase: useCase, logger: logger, validator: validator}
 }
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 	converter := registration.NewConverter(c.validator)
-	regRequest, converterErr := converter.ValidateAndApply(r)
-	if converterErr != nil {
-		_ = render.Render(w, r, converterErr)
+	regRequest, valErr := converter.ValidateAndApply(r)
+	if valErr != nil {
+		valErr.ErrValidation(w)
 		return
 	}
 
 	user, err := c.useCase.Register(regRequest.Name, regRequest.Email, regRequest.Password)
 	if err != nil {
-		if errors.As(err, &auth.ErrUserAlreadyExists{}) {
-			_ = render.Render(w, r, response.ErrConflict(err))
+		if errors.Is(err, auth.ErrUserAlreadyExists) {
+			response.ErrConflict(w, err)
 			return
 		}
-		_ = render.Render(w, r, response.ErrInternalServer())
+		response.ErrInternalServer(w)
 		c.logger.Error(err)
 		return
 	}
@@ -48,18 +48,18 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	converter := login.NewConverter(c.validator)
-	loginRequest, converterErr := converter.ValidateAndApply(r)
-	if converterErr != nil {
-		_ = render.Render(w, r, converterErr)
+	loginRequest, valErr := converter.ValidateAndApply(r)
+	if valErr != nil {
+		valErr.ErrValidation(w)
 		return
 	}
 
 	tokenString, err := c.useCase.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
-		if errors.As(err, &auth.ErrUserNotFound{}) {
-			_ = render.Render(w, r, response.ErrIncorrectCredentials())
+		if errors.Is(err, auth.ErrUserNotFound) {
+			response.ErrHttpError(w, http.StatusUnauthorized, "The credentials provided are incorrect.")
 		} else {
-			_ = render.Render(w, r, response.ErrInternalServer())
+			response.ErrInternalServer(w)
 			c.logger.Error(err)
 		}
 		return

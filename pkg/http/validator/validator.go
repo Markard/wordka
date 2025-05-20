@@ -1,7 +1,8 @@
-package httpserver
+package validator
 
 import (
-	"github.com/Markard/wordka/pkg/httpserver/response"
+	"fmt"
+	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/go-playground/validator/v10"
 	"github.com/iancoleman/strcase"
 	"strings"
@@ -9,7 +10,7 @@ import (
 )
 
 type ProjectValidator interface {
-	Struct(s interface{}) []*response.ValidationErr
+	Struct(s interface{}) *response.ValidationError
 }
 
 type Validator struct {
@@ -26,19 +27,21 @@ func NewValidator() (*Validator, error) {
 	return v, nil
 }
 
-func (v *Validator) Struct(s interface{}) []*response.ValidationErr {
+func (v *Validator) Struct(s interface{}) *response.ValidationError {
 	if errVal := v.Validate.Struct(s); errVal != nil {
 		validationErrors := errVal.(validator.ValidationErrors)
-		errResult := make([]*response.ValidationErr, 0, len(validationErrors))
+		errResult := response.NewValidationError()
 		for _, validationError := range validationErrors {
-			errResult = append(
-				errResult,
-				response.NewValidationErr(
-					validationError.Tag(),
-					formatFieldForMsg(validationError),
-					validationError.Param(),
-					validationError.Error(),
+			errResult.FieldErrors = append(
+				errResult.FieldErrors,
+				response.NewFieldValidationError(
 					validationError.Field(),
+					msgForTag(
+						validationError.Tag(),
+						formatFieldForMsg(validationError),
+						validationError.Param(),
+						validationError.Error(),
+					),
 				),
 			)
 		}
@@ -56,6 +59,27 @@ func formatFieldForMsg(fieldError validator.FieldError) string {
 	}
 
 	return strings.Join(snakeCasedFields, ".")
+}
+
+func msgForTag(tag, fieldForErrMsg, param, originErrMessage string) string {
+	switch tag {
+	case "required":
+		return fmt.Sprintf("The '%s' field is required.", fieldForErrMsg)
+	case "min":
+		return fmt.Sprintf("The '%s' field must be at least %v.", fieldForErrMsg, param)
+	case "max":
+		return fmt.Sprintf("The '%s' field may not be greater than %v.", fieldForErrMsg, param)
+	case "len":
+		return fmt.Sprintf("The '%s' field must be %v characters.", fieldForErrMsg, param)
+	case "email":
+		return fmt.Sprintf("The '%s' field must be a valid email address.", fieldForErrMsg)
+	case "validate_password":
+		return fmt.Sprintf(
+			"The '%s' field must contains at least one uppercase letter, one lowercase letter, one number and one special character.",
+			fieldForErrMsg,
+		)
+	}
+	return originErrMessage
 }
 
 func validatePassword(fl validator.FieldLevel) bool {

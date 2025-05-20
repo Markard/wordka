@@ -7,6 +7,11 @@ import (
 	"github.com/Markard/wordka/internal/repo"
 )
 
+var (
+	ErrUserNotFound      = errors.New("user with such email not found")
+	ErrUserAlreadyExists = errors.New("user with such email already exists")
+)
+
 type IAuthRepository interface {
 	Create(user *entity.User) error
 	FindBy(email string) (*entity.User, error)
@@ -28,8 +33,8 @@ func (auth *UseCase) Register(name string, email string, rawPassword string) (*e
 	}
 	err = auth.repository.Create(user)
 	if err != nil {
-		if errors.As(err, &repo.ErrEmailUniqConstraint{}) {
-			return nil, ErrUserAlreadyExists{email}
+		if errors.Is(err, repo.ErrEmailUniqConstraint) {
+			return nil, ErrUserAlreadyExists
 		}
 		return nil, err
 	}
@@ -41,14 +46,14 @@ func (auth *UseCase) Login(email string, password string) (string, error) {
 	user, err := auth.repository.FindBy(email)
 	if err != nil {
 		if user == nil {
-			return "", ErrUserNotFound{email}
+			return "", ErrUserNotFound
 		} else {
 			return "", err
 		}
 	}
 
 	if !user.IsPasswordMatch(password) {
-		return "", ErrUserNotFound{email}
+		return "", ErrUserNotFound
 	}
 
 	tokenString, err := auth.jwtService.CreateTokenStringWithES256(user.Id)
