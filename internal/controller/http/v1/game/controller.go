@@ -64,9 +64,9 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 	converter := guess.NewConverter(c.validator)
-	guessReq, converterErr := converter.ValidateAndApply(r)
-	if converterErr != nil {
-		response.ErrValidation(w, converterErr)
+	guessReq, valErr := converter.ValidateAndApply(r)
+	if valErr != nil {
+		valErr.ErrValidation(w)
 		return
 	}
 
@@ -80,10 +80,10 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 			response.ErrNotFound(w, err)
 			return
 		} else if errors.As(err, &game.ErrIncorrectWord{}) {
-			validationError := response.
+			response.
 				NewValidationError().
-				AddFieldError("word", "The word must be a Russian noun consisting of exactly 5 letters")
-			response.ErrValidation(w, validationError)
+				AddFieldError("word", "The word must be a Russian noun consisting of exactly 5 letters").
+				ErrValidation(w)
 			return
 		} else {
 			c.logger.Error(err)

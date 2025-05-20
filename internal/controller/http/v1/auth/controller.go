@@ -24,9 +24,9 @@ func NewController(useCase *auth.UseCase, logger logger.Interface, validator val
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 	converter := registration.NewConverter(c.validator)
-	regRequest, converterErr := converter.ValidateAndApply(r)
-	if converterErr != nil {
-		response.ErrValidation(w, converterErr)
+	regRequest, valErr := converter.ValidateAndApply(r)
+	if valErr != nil {
+		valErr.ErrValidation(w)
 		return
 	}
 
@@ -48,9 +48,9 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	converter := login.NewConverter(c.validator)
-	loginRequest, converterErr := converter.ValidateAndApply(r)
-	if converterErr != nil {
-		response.ErrValidation(w, converterErr)
+	loginRequest, valErr := converter.ValidateAndApply(r)
+	if valErr != nil {
+		valErr.ErrValidation(w)
 		return
 	}
 
