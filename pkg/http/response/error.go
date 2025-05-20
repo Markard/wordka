@@ -7,8 +7,7 @@ import (
 )
 
 type ErrResponse struct {
-	HTTPStatusCode int `json:"-"` // http response status code
-
+	StatusCode int    `json:"-"`
 	StatusText string `json:"status"`          // user-level status message
 	AppCode    int64  `json:"code,omitempty"`  // application-specific error code
 	ErrorText  string `json:"error,omitempty"` // application-level error message, for debugging
@@ -44,38 +43,38 @@ type ValidationErrResponse struct {
 }
 
 func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
-	render.Status(r, e.HTTPStatusCode)
+	render.Status(r, e.StatusCode)
 	return nil
 }
 
 func ErrNotFound(err error) render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: http.StatusNotFound,
-		StatusText:     "Not found",
-		ErrorText:      err.Error(),
+		StatusCode: http.StatusNotFound,
+		StatusText: "Not found",
+		ErrorText:  err.Error(),
 	}
 }
 
 func ErrConflict(err error) render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: http.StatusConflict,
-		StatusText:     "Conflict",
-		ErrorText:      err.Error(),
+		StatusCode: http.StatusConflict,
+		StatusText: "Conflict",
+		ErrorText:  err.Error(),
 	}
 }
 
 func ErrInvalidJson(err error) render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: http.StatusBadRequest,
-		StatusText:     "Invalid JSON",
-		ErrorText:      err.Error(),
+		StatusCode: http.StatusBadRequest,
+		StatusText: "Invalid JSON",
+		ErrorText:  err.Error(),
 	}
 }
 
 func ErrUnauthorized() render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: http.StatusUnauthorized,
-		StatusText:     "Authentication required",
+		StatusCode: http.StatusUnauthorized,
+		StatusText: "Authentication required",
 		ErrorText: "Access to this resource requires authentication. Please provide a valid JWT token in the " +
 			"Authorization header (Bearer {token}), in the 'jwt' cookie, or as the 'jwt' query parameter.",
 	}
@@ -83,26 +82,26 @@ func ErrUnauthorized() render.Renderer {
 
 func ErrIncorrectCredentials() render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: http.StatusUnauthorized,
-		StatusText:     "Authorization failed",
-		ErrorText:      "The credentials provided are incorrect.",
+		StatusCode: http.StatusUnauthorized,
+		StatusText: "Authorization failed",
+		ErrorText:  "The credentials provided are incorrect.",
 	}
 }
 
 func ErrInternalServer() render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: http.StatusInternalServerError,
-		StatusText:     "Internal Server Error",
-		ErrorText:      "Internal Server Error.",
+		StatusCode: http.StatusInternalServerError,
+		StatusText: "Internal Server Error",
+		ErrorText:  "Internal Server Error.",
 	}
 }
 
 func ErrValidation(errors []*ValidationErr) render.Renderer {
 	return &ValidationErrResponse{
 		ErrResponse: &ErrResponse{
-			HTTPStatusCode: 400,
-			StatusText:     "Validation failed.",
-			ErrorText:      "",
+			StatusCode: 400,
+			StatusText: "Validation failed.",
+			ErrorText:  "",
 		},
 		ErrorTexts: errors,
 	}
