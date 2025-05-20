@@ -5,7 +5,7 @@ import (
 	"github.com/Markard/wordka/internal/controller/http/v1"
 	projectMiddleware "github.com/Markard/wordka/internal/infra/middleware"
 	"github.com/Markard/wordka/internal/usecase"
-	"github.com/Markard/wordka/pkg/httpserver"
+	"github.com/Markard/wordka/pkg/http/validator"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -17,7 +17,7 @@ func SetupRouter(
 	router *chi.Mux,
 	setup *config.Setup,
 	logger logger.Interface,
-	val httpserver.ProjectValidator,
+	val validator.ProjectValidator,
 	middlewares *projectMiddleware.Middlewares,
 	useCases *usecase.UseCases,
 ) {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/Markard/wordka/internal/entity"
 	serviceJwt "github.com/Markard/wordka/internal/infra/service/jwt"
-	"github.com/Markard/wordka/pkg/httpserver/response"
+	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/go-chi/render"
 	"net/http"
 	"strings"

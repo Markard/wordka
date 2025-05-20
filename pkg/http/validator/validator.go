@@ -1,7 +1,7 @@
-package httpserver
+package validator
 
 import (
-	"github.com/Markard/wordka/pkg/httpserver/response"
+	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/go-playground/validator/v10"
 	"github.com/iancoleman/strcase"
 	"strings"

@@ -8,8 +8,8 @@ import (
 	"github.com/Markard/wordka/internal/entity"
 	"github.com/Markard/wordka/internal/infra/middleware/jwt"
 	"github.com/Markard/wordka/internal/usecase/game"
-	"github.com/Markard/wordka/pkg/httpserver"
-	"github.com/Markard/wordka/pkg/httpserver/response"
+	"github.com/Markard/wordka/pkg/http/response"
+	"github.com/Markard/wordka/pkg/http/validator"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/go-chi/render"
 	"net/http"
@@ -18,10 +18,10 @@ import (
 type Controller struct {
 	useCase   *game.UseCase
 	logger    logger.Interface
-	validator httpserver.ProjectValidator
+	validator validator.ProjectValidator
 }
 
-func NewController(useCase *game.UseCase, logger logger.Interface, validator httpserver.ProjectValidator) *Controller {
+func NewController(useCase *game.UseCase, logger logger.Interface, validator validator.ProjectValidator) *Controller {
 	return &Controller{useCase: useCase, logger: logger, validator: validator}
 }
 
