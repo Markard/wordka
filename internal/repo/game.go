@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/Markard/wordka/internal/entity"
 	"github.com/uptrace/bun"
+	"time"
 )
 
 var (
@@ -133,37 +134,20 @@ func (r *GameRepository) AddGuessForCurrentGame(currentUser *entity.User, word *
 }
 
 func (r *GameRepository) SaveWords(words []string) error {
-	var chunks [][]string
-	chunkSize := 1000
-	for i := 0; i < len(words); i += chunkSize {
-		end := i + chunkSize
-		if end > len(words) {
-			end = len(words)
-		}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
 
-		chunks = append(chunks, words[i:end])
+	var wordEntities []*entity.Word
+	for _, word := range words {
+		wordEntities = append(wordEntities, entity.NewWord(word))
 	}
-
-	ctx := context.Background()
-	tx, err := r.pgDb.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
+	_, err := r.pgDb.NewInsert().
+		Model(&wordEntities).
+		Ignore().
+		Exec(ctx)
 	if err != nil {
 		return err
 	}
-	for _, chunk := range chunks {
-		var wordsChunk []*entity.Word
-		for _, word := range chunk {
-			wordsChunk = append(wordsChunk, entity.NewWord(word))
-		}
-		_, err := tx.NewInsert().
-			Model(&wordsChunk).
-			Ignore().
-			Exec(ctx)
-		if err != nil {
-			_ = tx.Rollback()
-			return err
-		}
-	}
-	_ = tx.Commit()
 
 	return nil
 }
