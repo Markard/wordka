@@ -29,7 +29,7 @@ func (c *Controller) GetCurrentGame(w http.ResponseWriter, r *http.Request) {
 	currentUser, _ := r.Context().Value(jwt.CurrentUserCtxKey).(*entity.User)
 	currentGame, err := c.useCase.FindCurrentGame(currentUser)
 	if err != nil {
-		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
+		if errors.Is(err, game.ErrCurrentGameNotFound) {
 			response.ErrNotFound(w, err)
 			return
 		} else {
@@ -48,7 +48,7 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 	currentGame, err := c.useCase.CreateGame(currentUser)
 
 	if err != nil {
-		if errors.As(err, &game.ErrCurrentGameAlreadyExists{}) {
+		if errors.Is(err, game.ErrCurrentGameAlreadyExists) {
 			response.ErrConflict(w, err)
 			return
 		} else {
@@ -76,10 +76,10 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 
 	currentGame, err := c.useCase.Guess(currentUser, guessReq.Word)
 	if err != nil {
-		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
+		if errors.Is(err, game.ErrCurrentGameNotFound) {
 			response.ErrNotFound(w, err)
 			return
-		} else if errors.As(err, &game.ErrIncorrectWord{}) {
+		} else if errors.Is(err, game.ErrIncorrectWord) {
 			response.
 				NewValidationError().
 				AddFieldError("word", "The word must be a Russian noun consisting of exactly 5 letters").

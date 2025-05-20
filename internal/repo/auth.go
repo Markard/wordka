@@ -9,6 +9,8 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
+var ErrEmailUniqConstraint = errors.New("email already exists")
+
 type AuthRepository struct {
 	pgDb *bun.DB
 }
@@ -22,7 +24,7 @@ func (r AuthRepository) Create(user *entity.User) error {
 	if err != nil {
 		var pgErr pgdriver.Error
 		if errors.As(err, &pgErr) && pgErr.IntegrityViolation() && pgErr.Field('C') == pgerrcode.UniqueViolation {
-			return ErrEmailUniqConstraint{email: user.Email}
+			return ErrEmailUniqConstraint
 		} else {
 			return err
 		}

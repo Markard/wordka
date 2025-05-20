@@ -32,7 +32,7 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 
 	user, err := c.useCase.Register(regRequest.Name, regRequest.Email, regRequest.Password)
 	if err != nil {
-		if errors.As(err, &auth.ErrUserAlreadyExists{}) {
+		if errors.Is(err, auth.ErrUserAlreadyExists) {
 			response.ErrConflict(w, err)
 			return
 		}
@@ -56,7 +56,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := c.useCase.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
-		if errors.As(err, &auth.ErrUserNotFound{}) {
+		if errors.Is(err, auth.ErrUserNotFound) {
 			response.ErrHttpError(w, http.StatusUnauthorized, "The credentials provided are incorrect.")
 		} else {
 			response.ErrInternalServer(w)
