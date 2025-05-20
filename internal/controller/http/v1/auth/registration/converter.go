@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/Markard/wordka/pkg/http/validator"
-	"github.com/go-chi/render"
 	"net/http"
 )
 
@@ -16,16 +15,16 @@ func NewConverter(validator validator.ProjectValidator) *Converter {
 	return &Converter{validator: validator}
 }
 
-func (c *Converter) ValidateAndApply(r *http.Request) (*Request, render.Renderer) {
+func (c *Converter) ValidateAndApply(r *http.Request) (*Request, *response.ValidationError) {
 	registrationReq := &Request{}
 
 	err := json.NewDecoder(r.Body).Decode(registrationReq)
 	if err != nil {
-		return nil, response.ErrInvalidJson(err)
+		return nil, response.NewValidationError().AddFieldError("body", err.Error())
 	}
 
 	if errVal := c.validator.Struct(registrationReq); errVal != nil {
-		return nil, response.ErrValidation(errVal)
+		return nil, errVal
 	}
 
 	return registrationReq, nil

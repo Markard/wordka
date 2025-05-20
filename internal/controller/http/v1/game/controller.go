@@ -30,7 +30,7 @@ func (c *Controller) GetCurrentGame(w http.ResponseWriter, r *http.Request) {
 	currentGame, err := c.useCase.FindCurrentGame(currentUser)
 	if err != nil {
 		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
-			_ = render.Render(w, r, response.ErrNotFound(err))
+			response.ErrNotFound(w, err)
 			return
 		} else {
 			c.logger.Error(err)
@@ -49,7 +49,7 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.As(err, &game.ErrCurrentGameAlreadyExists{}) {
-			_ = render.Render(w, r, response.ErrConflict(err))
+			response.ErrConflict(w, err)
 			return
 		} else {
 			c.logger.Error(err)
@@ -66,7 +66,7 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 	converter := guess.NewConverter(c.validator)
 	guessReq, converterErr := converter.ValidateAndApply(r)
 	if converterErr != nil {
-		_ = render.Render(w, r, converterErr)
+		response.ErrValidation(w, converterErr)
 		return
 	}
 
@@ -77,14 +77,13 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 	currentGame, err := c.useCase.Guess(currentUser, guessReq.Word)
 	if err != nil {
 		if errors.As(err, &game.ErrCurrentGameNotFound{}) {
-			_ = render.Render(w, r, response.ErrNotFound(err))
+			response.ErrNotFound(w, err)
 			return
 		} else if errors.As(err, &game.ErrIncorrectWord{}) {
-			errIncorrectWord := response.NewCustomValidationErrs(
-				"word",
-				"The word must be a Russian noun consisting of exactly 5 letters",
-			)
-			_ = render.Render(w, r, response.ErrValidation(errIncorrectWord))
+			validationError := response.
+				NewValidationError().
+				AddFieldError("word", "The word must be a Russian noun consisting of exactly 5 letters")
+			response.ErrValidation(w, validationError)
 			return
 		} else {
 			c.logger.Error(err)

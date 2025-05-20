@@ -26,17 +26,17 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 	converter := registration.NewConverter(c.validator)
 	regRequest, converterErr := converter.ValidateAndApply(r)
 	if converterErr != nil {
-		_ = render.Render(w, r, converterErr)
+		response.ErrValidation(w, converterErr)
 		return
 	}
 
 	user, err := c.useCase.Register(regRequest.Name, regRequest.Email, regRequest.Password)
 	if err != nil {
 		if errors.As(err, &auth.ErrUserAlreadyExists{}) {
-			_ = render.Render(w, r, response.ErrConflict(err))
+			response.ErrConflict(w, err)
 			return
 		}
-		_ = render.Render(w, r, response.ErrInternalServer())
+		response.ErrInternalServer(w)
 		c.logger.Error(err)
 		return
 	}
@@ -50,16 +50,16 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	converter := login.NewConverter(c.validator)
 	loginRequest, converterErr := converter.ValidateAndApply(r)
 	if converterErr != nil {
-		_ = render.Render(w, r, converterErr)
+		response.ErrValidation(w, converterErr)
 		return
 	}
 
 	tokenString, err := c.useCase.Login(loginRequest.Email, loginRequest.Password)
 	if err != nil {
 		if errors.As(err, &auth.ErrUserNotFound{}) {
-			_ = render.Render(w, r, response.ErrIncorrectCredentials())
+			response.ErrHttpError(w, http.StatusUnauthorized, "The credentials provided are incorrect.")
 		} else {
-			_ = render.Render(w, r, response.ErrInternalServer())
+			response.ErrInternalServer(w)
 			c.logger.Error(err)
 		}
 		return

@@ -1,120 +1,102 @@
 package response
 
 import (
-	"fmt"
-	"github.com/go-chi/render"
+	"encoding/json"
 	"net/http"
 )
 
 type HttpError struct {
-	StatusCode int    `json:"-"`
-	Text       string `json:"error,omitempty"`
+	StatusCode int
+	Message    string
 }
 
-type ValidationErr struct {
+func NewHttpError(statusCode int, message string) *HttpError {
+	return &HttpError{StatusCode: statusCode, Message: message}
+}
+
+type JsonResponse struct {
+	Message string `json:"error"`
+	Details string `json:"details,omitempty"`
+}
+
+func replyAsJson(w http.ResponseWriter, httpError *HttpError) {
+	r := JsonResponse{Message: httpError.Message}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(httpError.StatusCode)
+	_ = json.NewEncoder(w).Encode(r)
+}
+
+func ErrNotFound(w http.ResponseWriter, err error) {
+	httpError := NewHttpError(http.StatusNotFound, err.Error())
+	replyAsJson(w, httpError)
+}
+
+func ErrConflict(w http.ResponseWriter, err error) {
+	httpError := NewHttpError(http.StatusConflict, err.Error())
+	replyAsJson(w, httpError)
+}
+
+func ErrInternalServer(w http.ResponseWriter) {
+	httpError := NewHttpError(http.StatusInternalServerError, "Internal server error.")
+	replyAsJson(w, httpError)
+}
+
+func ErrHttpError(w http.ResponseWriter, statusCode int, msg string) {
+	httpError := NewHttpError(statusCode, msg)
+	replyAsJson(w, httpError)
+}
+
+type FieldValidationError struct {
+	Field   string
+	Message string
+}
+
+func NewFieldValidationError(field string, message string) *FieldValidationError {
+	return &FieldValidationError{Field: field, Message: message}
+}
+
+type ValidationError struct {
+	*HttpError
+	FieldErrors []*FieldValidationError
+}
+
+func NewValidationError() *ValidationError {
+	return &ValidationError{
+		HttpError:   NewHttpError(http.StatusBadRequest, "Validation error"),
+		FieldErrors: []*FieldValidationError{},
+	}
+}
+
+func (err *ValidationError) AddFieldError(field, message string) *ValidationError {
+	err.FieldErrors = append(err.FieldErrors, NewFieldValidationError(field, message))
+	return err
+}
+
+type JsonFieldValidationErrorResponse struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }
 
-func NewValidationErr(tag, fieldForErrMsg, param, message, field string) *ValidationErr {
-	return &ValidationErr{
-		Field:   field,
-		Message: msgForTag(tag, fieldForErrMsg, param, message),
+type JsonValidationErrorResponse struct {
+	Message     string                              `json:"message"`
+	FieldErrors []*JsonFieldValidationErrorResponse `json:"field_errors,omitempty"`
+}
+
+func ErrValidation(w http.ResponseWriter, valErr *ValidationError) {
+	replyValErrAsJson(w, valErr)
+}
+
+func replyValErrAsJson(w http.ResponseWriter, valError *ValidationError) {
+	r := &JsonValidationErrorResponse{Message: valError.HttpError.Message}
+	for _, fieldErr := range valError.FieldErrors {
+		r.FieldErrors = append(r.FieldErrors, &JsonFieldValidationErrorResponse{
+			Field:   fieldErr.Field,
+			Message: fieldErr.Message,
+		})
 	}
-}
 
-func NewCustomValidationErrs(field, message string) []*ValidationErr {
-	err := &ValidationErr{
-		Field:   field,
-		Message: message,
-	}
-	var valErrs []*ValidationErr
-	valErrs = append(valErrs, err)
-
-	return valErrs
-}
-
-type ValidationErrResponse struct {
-	*HttpError
-
-	ErrorTexts []*ValidationErr `json:"errors,omitempty"`
-}
-
-func (e *HttpError) Render(w http.ResponseWriter, r *http.Request) error {
-	render.Status(r, e.StatusCode)
-	return nil
-}
-
-func ErrNotFound(err error) render.Renderer {
-	return &HttpError{
-		StatusCode: http.StatusNotFound,
-		Text:       err.Error(),
-	}
-}
-
-func ErrConflict(err error) render.Renderer {
-	return &HttpError{
-		StatusCode: http.StatusConflict,
-		Text:       err.Error(),
-	}
-}
-
-func ErrInvalidJson(err error) render.Renderer {
-	return &HttpError{
-		StatusCode: http.StatusBadRequest,
-		Text:       err.Error(),
-	}
-}
-
-func ErrUnauthorized() render.Renderer {
-	return &HttpError{
-		StatusCode: http.StatusUnauthorized,
-		Text: "Access to this resource requires authentication. Please provide a valid JWT token in the " +
-			"Authorization header (Bearer {token}), in the 'jwt' cookie, or as the 'jwt' query parameter.",
-	}
-}
-
-func ErrIncorrectCredentials() render.Renderer {
-	return &HttpError{
-		StatusCode: http.StatusUnauthorized,
-		Text:       "The credentials provided are incorrect.",
-	}
-}
-
-func ErrInternalServer() render.Renderer {
-	return &HttpError{
-		StatusCode: http.StatusInternalServerError,
-		Text:       "Internal Server Error.",
-	}
-}
-
-func ErrValidation(errors []*ValidationErr) render.Renderer {
-	return &ValidationErrResponse{
-		HttpError: &HttpError{
-			StatusCode: 400,
-			Text:       "",
-		},
-		ErrorTexts: errors,
-	}
-}
-
-func msgForTag(tag, fieldForErrMsg, param, originErrMessage string) string {
-	switch tag {
-	case "required":
-		return fmt.Sprintf("The '%s' field is required.", fieldForErrMsg)
-	case "min":
-		return fmt.Sprintf("The '%s' field must be at least %v.", fieldForErrMsg, param)
-	case "max":
-		return fmt.Sprintf("The '%s' field may not be greater than %v.", fieldForErrMsg, param)
-	case "len":
-		return fmt.Sprintf("The '%s' field must be %v characters.", fieldForErrMsg, param)
-	case "email":
-		return fmt.Sprintf("The '%s' field must be a valid email address.", fieldForErrMsg)
-	case "validate_password":
-		return fmt.Sprintf(
-			"The '%s' field must contains at least one uppercase letter, one lowercase letter, one number and one special character.",
-			fieldForErrMsg,
-		)
-	}
-	return originErrMessage
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(valError.HttpError.StatusCode)
+	_ = json.NewEncoder(w).Encode(r)
 }
