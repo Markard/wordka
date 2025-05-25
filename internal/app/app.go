@@ -23,18 +23,7 @@ import (
 
 func Run(setup *config.Setup) {
 	// Initialize logger
-	logFile, err := os.OpenFile(setup.Config.Log.FilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("could not open log file")
-	}
-	defer func(logFile *os.File) {
-		if err := logFile.Close(); err != nil {
-			log.With().Err(err)
-		}
-	}(logFile)
-	lgr := logger.New(setup.Config.Log.Level, setup.Config.Log.CallerSkipFrameCount, logFile)
+	lgr := logger.New(setup.Config.Log.Level, setup.Config.Log.CallerSkipFrameCount)
 
 	// Validator
 	val, err := validator.NewValidator()

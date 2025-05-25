@@ -5,7 +5,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/pkgerrors"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -28,19 +27,12 @@ type Logger struct {
 
 var _ Interface = (*Logger)(nil)
 
-func New(level string, callerSkipFrameCount int, logFile *os.File) *Logger {
+func New(level string, callerSkipFrameCount int) *Logger {
 	setGlobalLevel(level)
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-	var w io.Writer
-	if logFile != nil {
-		w = zerolog.MultiLevelWriter(consoleWriter, logFile)
-	} else {
-		w = zerolog.ConsoleWriter{Out: os.Stdout}
-	}
-	logger := zerolog.New(w).
+	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).
 		With().
 		Timestamp().
 		CallerWithSkipFrameCount(zerolog.CallerSkipFrameCount + callerSkipFrameCount).
