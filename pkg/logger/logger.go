@@ -27,7 +27,7 @@ type Logger struct {
 
 var _ Interface = (*Logger)(nil)
 
-func New(level string, callerSkipFrameCount int) *Logger {
+func New(level string) *Logger {
 	setGlobalLevel(level)
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
@@ -35,7 +35,6 @@ func New(level string, callerSkipFrameCount int) *Logger {
 	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).
 		With().
 		Timestamp().
-		CallerWithSkipFrameCount(zerolog.CallerSkipFrameCount + callerSkipFrameCount).
 		Logger()
 
 	return &Logger{

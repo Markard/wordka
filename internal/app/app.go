@@ -23,7 +23,7 @@ import (
 
 func Run(setup *config.Setup) {
 	// Initialize logger
-	lgr := logger.New(setup.Config.Log.Level, setup.Config.Log.CallerSkipFrameCount)
+	lgr := logger.New(setup.Config.Log.Level)
 
 	// Validator
 	val, err := validator.NewValidator()
