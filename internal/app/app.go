@@ -15,22 +15,18 @@ import (
 	"github.com/Markard/wordka/pkg/http/validator"
 	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
-	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 func Run(setup *config.Setup) {
-	// Initialize logger
 	lgr := logger.New(setup.Config.Log.Level)
 
 	// Validator
 	val, err := validator.NewValidator()
 	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("could not initiate validator")
+		lgr.Fatal(fmt.Errorf("could not initiate validator: %w", err))
 	}
 
 	// Repository PostgreSQL
