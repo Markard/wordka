@@ -57,8 +57,8 @@ func Run(setup *config.Setup) {
 	http.SetupRouter(httpServer.Router, setup, lgr, val, middlewares, useCases)
 
 	// Start Http Server
-	lgr.Info("app - Run - httpServer.Start")
 	httpServer.Start()
+	lgr.Info("Wordka:Start | Address: %v, Env: %v", setup.Config.HttpServer.Address, setup.Env.AppEnv)
 
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
@@ -66,14 +66,15 @@ func Run(setup *config.Setup) {
 
 	select {
 	case s := <-interrupt:
-		lgr.Info("app - Run - signal: %s", s.String())
+		lgr.Info("Wordka:Running | Signal: %s", s.String())
 	case err = <-httpServer.Notify():
-		lgr.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+		lgr.Error(fmt.Errorf("Wordka:Running | Notify: %w", err))
 	}
 
 	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		lgr.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
+		lgr.Error(fmt.Errorf("Wordka:Shutdown | Error: %w", err))
 	}
+	lgr.Info("Wordka:Shutdown")
 }
