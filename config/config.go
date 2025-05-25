@@ -26,9 +26,7 @@ type (
 	}
 
 	Log struct {
-		Level                string `yaml:"level" env-default:"debug"`
-		FilePath             string `yaml:"file_path" env-required:"true"`
-		CallerSkipFrameCount int    `yaml:"caller_skip_frame_count" env-default:"3"`
+		Level string `yaml:"level" env-default:"debug"`
 	}
 
 	Env struct {

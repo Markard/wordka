@@ -4,5 +4,3 @@ http_server:
   idle_timeout: 30s
 log:
   level: debug
-  file_path: tmp/log/dev.txt
-  caller_skip_frame_count: 3

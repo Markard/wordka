@@ -115,7 +115,7 @@ func (w *Worker) DoWork(job *Job) *Result {
 
 func main() {
 	setup := config.MustLoad()
-	lgr := logger.New(setup.Config.Log.Level, setup.Config.Log.CallerSkipFrameCount, nil)
+	lgr := logger.New(setup.Config.Log.Level)
 	pages := 36
 	results := make(chan *Result, pages)
 	parser := ParserWithPagination(
