@@ -1,3 +1,10 @@
+ifneq ($(wildcard .env),)
+include .env
+export
+else
+$(warning WARNING: .env file not found! Using .env.example)
+endif
+
 .PHONY: help
 
 help: ## Display this help screen
@@ -8,7 +15,7 @@ dev-air: $(AIR) ## Starts AIR ( Continuous Development app).
 	air
 
 # ~~~ Database Migrations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PG_DSN=postgres://user:pass@localhost:5432/db_name?sslmode=disable
+PG_DSN=postgres://${PG_USER}:${PG_PASS}@localhost:${PG_PORT}/${PG_DB}?sslmode=disable
 
 .PHONY: migrate-up
 migrate-up: $(MIGRATE) ## Apply all (or N up) migrations.

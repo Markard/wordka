@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 	"os"
 	"time"
@@ -30,12 +31,10 @@ type (
 	}
 
 	Env struct {
-		AppName         string `env:"APP_NAME" env-required:"true"`
-		AppVersion      string `env:"APP_VERSION" env-required:"true"`
-		AppEnv          string `env:"APP_ENV" env-required:"true"`
-		PgDSN           string `env:"PG_DSN" env-required:"true"`
-		ES256PrivateKey string `env:"ES256_PRIVATE_KEY" env-required:"true"`
-		ES256PublicKey  string `env:"ES256_PUBLIC_KEY" env-required:"true"`
+		AppEnv          string
+		PgDSN           string
+		ES256PrivateKey string
+		ES256PublicKey  string
 	}
 )
 
@@ -46,10 +45,14 @@ func MustLoad() *Setup {
 	}
 
 	var env Env
-	dotenvPath := fmt.Sprintf("%s/.env", currentDir)
-	if err := cleanenv.ReadConfig(dotenvPath, &env); err != nil {
-		log.Fatal().Err(err).Msg("failed to read config")
+	errLoadEnv := godotenv.Load()
+	if errLoadEnv != nil {
+		log.Fatal().Err(errLoadEnv).Msg("Error loading .env file")
 	}
+	env.AppEnv = os.Getenv("APP_ENV")
+	env.PgDSN = os.Getenv("PG_DSN")
+	env.ES256PrivateKey = os.Getenv("ES256_PRIVATE_KEY")
+	env.ES256PublicKey = os.Getenv("ES256_PUBLIC_KEY")
 
 	configPath := fmt.Sprintf("%s/config/%s.yaml", currentDir, env.AppEnv)
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
