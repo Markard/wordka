@@ -17,17 +17,12 @@ type (
 
 	Config struct {
 		HttpServer HttpServer `yaml:"http_server"`
-		Log        Log        `yaml:"log"`
 	}
 
 	HttpServer struct {
 		Address     string        `yaml:"address" env-required:"true"`
 		Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
 		IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"30s"`
-	}
-
-	Log struct {
-		Level string `yaml:"level" env-default:"debug"`
 	}
 
 	Env struct {
