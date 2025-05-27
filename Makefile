@@ -5,12 +5,28 @@ else
 $(warning WARNING: .env file not found! Using .env.example)
 endif
 
-.PHONY: help
+# Exporting bin folder to the path for makefile
+export PATH := $(PWD)/bin:$(PATH)
+# Default Shell
+export SHELL := bash
+# Type of OS: Linux or Darwin.
+export OSTYPE := $(shell uname -s | tr A-Z a-z)
+export ARCH := $(shell uname -m)
 
+.PHONY: help
 help: ## Display this help screen
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+# --- Tooling & Variables ----------------------------------------------------------------
+include ./misc/make/tools.Makefile
+
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+install-deps: migrate air gotestsum tparse mockery testfixtures ## Install Development Dependencies (localy).
+
+deps: $(MIGRATE) $(AIR) $(GOTESTSUM) $(TPARSE) $(MOCKERY) $(GOLANGCI) $(TESTFIXTURES) ## Checks for Global Development Dependencies.
+deps:
+	@echo "Required Tools Are Available"
+
 dev-air: $(AIR) ## Starts AIR ( Continuous Development app).
 	air
 
