@@ -7,19 +7,19 @@ import (
 	"github.com/Markard/wordka/internal/usecase/auth"
 	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/Markard/wordka/pkg/http/validator"
-	"github.com/Markard/wordka/pkg/logger"
+	"github.com/Markard/wordka/pkg/slogext"
 	"github.com/go-chi/render"
+	"log/slog"
 	"net/http"
 )
 
 type Controller struct {
 	useCase   *auth.UseCase
-	logger    logger.Interface
 	validator validator.ProjectValidator
 }
 
-func NewController(useCase *auth.UseCase, logger logger.Interface, validator validator.ProjectValidator) *Controller {
-	return &Controller{useCase: useCase, logger: logger, validator: validator}
+func NewController(useCase *auth.UseCase, validator validator.ProjectValidator) *Controller {
+	return &Controller{useCase: useCase, validator: validator}
 }
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +37,7 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		response.ErrInternalServer(w)
-		c.logger.Error(err)
+		slogext.Error(slog.Default(), err)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 			response.ErrHttpError(w, http.StatusUnauthorized, "The credentials provided are incorrect.")
 		} else {
 			response.ErrInternalServer(w)
-			c.logger.Error(err)
+			slogext.Error(slog.Default(), err)
 		}
 		return
 	}

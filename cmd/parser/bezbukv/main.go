@@ -3,9 +3,10 @@ package main
 import (
 	"github.com/Markard/wordka/config"
 	"github.com/Markard/wordka/internal/repo"
-	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
+	"github.com/Markard/wordka/pkg/slogext"
 	"github.com/PuerkitoBio/goquery"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -24,22 +25,21 @@ type Result struct {
 }
 
 type FiveLetterNounParser struct {
-	logger  logger.Interface
 	pages   int
 	workers int
 	baseUrl string
 	results chan<- *Result
 }
 
-func ParserWithPagination(lgr logger.Interface, pages int, workers int, baseUrl string, results chan<- *Result) *FiveLetterNounParser {
-	return &FiveLetterNounParser{logger: lgr, pages: pages, workers: workers, baseUrl: baseUrl, results: results}
+func ParserWithPagination(pages int, workers int, baseUrl string, results chan<- *Result) *FiveLetterNounParser {
+	return &FiveLetterNounParser{pages: pages, workers: workers, baseUrl: baseUrl, results: results}
 }
 
 func (p *FiveLetterNounParser) Parse() {
 	jobs := make(chan *Job, p.pages)
 
 	for w := 1; w <= p.workers; w++ {
-		worker := NewWorker(w, p.logger, jobs, p.results)
+		worker := NewWorker(w, jobs, p.results)
 		go worker.Start()
 	}
 
@@ -55,15 +55,13 @@ func (p *FiveLetterNounParser) Parse() {
 
 type Worker struct {
 	Id      int
-	logger  logger.Interface
 	Jobs    <-chan *Job
 	Results chan<- *Result
 }
 
-func NewWorker(id int, logger logger.Interface, jobs <-chan *Job, results chan<- *Result) *Worker {
+func NewWorker(id int, jobs <-chan *Job, results chan<- *Result) *Worker {
 	return &Worker{
 		Id:      id,
-		logger:  logger,
 		Jobs:    jobs,
 		Results: results,
 	}
@@ -76,22 +74,23 @@ func (w *Worker) Start() {
 }
 
 func (w *Worker) DoWork(job *Job) *Result {
-	w.logger.Info("Fetching words from %s", job.Url)
+	logger := slog.Default()
+	logger.Info("Fetching words", "url", job.Url)
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
 	resp, err := client.Get(job.Url)
 	if err != nil {
-		w.logger.Fatal(err)
+		slogext.Fatal(logger, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
-		w.logger.Fatal(err)
+		slogext.Fatal(logger, err)
 	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		w.logger.Fatal(err)
+		slogext.Fatal(logger, err)
 	}
 
 	result := &Result{
@@ -115,11 +114,10 @@ func (w *Worker) DoWork(job *Job) *Result {
 
 func main() {
 	setup := config.MustLoad()
-	lgr := logger.New(setup.Config.Log.Level)
+	logger := slogext.SetupLogger(setup.Env.AppEnv)
 	pages := 36
 	results := make(chan *Result, pages)
 	parser := ParserWithPagination(
-		lgr,
 		pages,
 		5,
 		"https://bezbukv.ru/mask/%2A%2A%2A%2A%2A/noun?page=",
@@ -127,11 +125,11 @@ func main() {
 	)
 	parser.Parse()
 
-	db := postgres.New(setup.Env.PgDSN, lgr.ZerologLogger())
+	db := postgres.New(setup.Env.PgDSN, logger)
 	defer func() {
 		err := db.Close()
 		if err != nil {
-			lgr.Error(err)
+			slogext.Error(logger, err)
 		}
 	}()
 	gameRepo := repo.NewGameRepository(db)
@@ -140,9 +138,9 @@ func main() {
 		result := <-results
 		err := gameRepo.SaveWords(result.Words)
 		if err != nil {
-			lgr.Error(err)
+			slogext.Error(logger, err)
 		}
-		lgr.Info("Successfully fetched %d words", len(result.Words))
+		logger.Info("Successfully fetched", "words", len(result.Words))
 	}
 	close(results)
 }

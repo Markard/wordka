@@ -6,6 +6,7 @@ import (
 	"github.com/Markard/wordka/internal/entity"
 	serviceJwt "github.com/Markard/wordka/internal/infra/service/jwt"
 	"github.com/Markard/wordka/pkg/http/response"
+	"github.com/Markard/wordka/pkg/slogext"
 	"net/http"
 	"strings"
 )
@@ -118,5 +119,6 @@ func newTokenContext(ctx context.Context, t *serviceJwt.Token, u *entity.User, e
 	ctx = context.WithValue(ctx, TokenCtxKey, t)
 	ctx = context.WithValue(ctx, ErrorCtxKey, err)
 	ctx = context.WithValue(ctx, CurrentUserCtxKey, u)
+	ctx = slogext.WithLogUserID(ctx, u.Id)
 	return ctx
 }
