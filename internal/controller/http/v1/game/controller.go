@@ -10,19 +10,19 @@ import (
 	"github.com/Markard/wordka/internal/usecase/game"
 	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/Markard/wordka/pkg/http/validator"
-	"github.com/Markard/wordka/pkg/logger"
+	"github.com/Markard/wordka/pkg/slogext"
 	"github.com/go-chi/render"
+	"log/slog"
 	"net/http"
 )
 
 type Controller struct {
 	useCase   *game.UseCase
-	logger    logger.Interface
 	validator validator.ProjectValidator
 }
 
-func NewController(useCase *game.UseCase, logger logger.Interface, validator validator.ProjectValidator) *Controller {
-	return &Controller{useCase: useCase, logger: logger, validator: validator}
+func NewController(useCase *game.UseCase, validator validator.ProjectValidator) *Controller {
+	return &Controller{useCase: useCase, validator: validator}
 }
 
 func (c *Controller) GetCurrentGame(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (c *Controller) GetCurrentGame(w http.ResponseWriter, r *http.Request) {
 			response.ErrNotFound(w, err)
 			return
 		} else {
-			c.logger.Error(err)
+			slogext.Error(slog.Default(), err)
 			return
 		}
 	}
@@ -52,7 +52,7 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 			response.ErrConflict(w, err)
 			return
 		} else {
-			c.logger.Error(err)
+			slogext.Error(slog.Default(), err)
 			return
 		}
 	}
@@ -86,7 +86,7 @@ func (c *Controller) Guess(w http.ResponseWriter, r *http.Request) {
 				ErrValidation(w)
 			return
 		} else {
-			c.logger.Error(err)
+			slogext.Error(slog.Default(), err)
 			return
 		}
 	}

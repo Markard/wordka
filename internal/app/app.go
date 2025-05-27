@@ -13,28 +13,29 @@ import (
 	"github.com/Markard/wordka/internal/usecase/game"
 	"github.com/Markard/wordka/pkg/http/server"
 	"github.com/Markard/wordka/pkg/http/validator"
-	"github.com/Markard/wordka/pkg/logger"
 	"github.com/Markard/wordka/pkg/postgres"
+	"github.com/Markard/wordka/pkg/slogext"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 func Run(setup *config.Setup) {
-	lgr := logger.New(setup.Config.Log.Level)
+	logger := slogext.SetupLogger(setup.Env.AppEnv)
+	slog.SetDefault(logger)
 
 	// Validator
 	val, err := validator.NewValidator()
 	if err != nil {
-		lgr.Fatal(fmt.Errorf("could not initiate validator: %w", err))
+		slogext.Fatal(logger, err)
 	}
 
 	// Repository PostgreSQL
-	db := postgres.New(setup.Env.PgDSN, lgr.ZerologLogger())
+	db := postgres.New(setup.Env.PgDSN, logger)
 	defer func() {
-		err := db.Close()
-		if err != nil {
-			lgr.Error(err)
+		if err := db.Close(); err != nil {
+			slogext.Fatal(logger, err)
 		}
 	}()
 	authRepo := repo.NewAuthRepository(db)
@@ -54,11 +55,11 @@ func Run(setup *config.Setup) {
 
 	// HTTP Server
 	httpServer := server.New(setup.Config.HttpServer.Address, setup.Config.HttpServer.IdleTimeout)
-	http.SetupRouter(httpServer.Router, setup, lgr, val, middlewares, useCases)
+	http.SetupRouter(httpServer.Router, setup, val, middlewares, useCases)
 
 	// Start Http Server
 	httpServer.Start()
-	lgr.Info("Wordka:Start | Address: %v, Env: %v", setup.Config.HttpServer.Address, setup.Env.AppEnv)
+	logger.Info("Wordka:Start", "address", setup.Config.HttpServer.Address, "env", setup.Env.AppEnv)
 
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
@@ -66,15 +67,15 @@ func Run(setup *config.Setup) {
 
 	select {
 	case s := <-interrupt:
-		lgr.Info("Wordka:Running | Signal: %s", s.String())
+		logger.Info("Wordka:Signal", "signal", s.String())
 	case err = <-httpServer.Notify():
-		lgr.Error(fmt.Errorf("Wordka:Running | Notify: %w", err))
+		slogext.Error(logger, fmt.Errorf("Wordka:Running | Notify: %w", err))
 	}
 
 	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		lgr.Error(fmt.Errorf("Wordka:Shutdown | Error: %w", err))
+		slogext.Error(logger, fmt.Errorf("Wordka:Shutdown | Error: %w", err))
 	}
-	lgr.Info("Wordka:Shutdown")
+	logger.Info("Wordka:Shutdown")
 }
