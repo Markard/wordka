@@ -35,8 +35,7 @@ PG_DSN=postgres://${PG_USER}:${PG_PASS}@localhost:${PG_PORT}/${PG_DB}?sslmode=di
 
 .PHONY: migrate-up
 migrate-up: $(MIGRATE) ## Apply all (or N up) migrations.
-	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
- 	migrate  -database $(PG_DSN) -path=migrations up $${N}
+	@ migrate  -database $(PG_DSN) -path=migrations up
 
 .PHONY: migrate-down
 migrate-down: $(MIGRATE) ## Apply all (or N down) migrations.
