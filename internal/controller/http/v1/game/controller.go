@@ -51,7 +51,12 @@ func (c *Controller) CreateGame(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, game.ErrCurrentGameAlreadyExists) {
 			response.ErrConflict(w, err)
 			return
+		} else if errors.Is(err, game.ErrNoWordsFound) {
+			slogext.Error(slog.Default(), err)
+			response.ErrNotFound(w, err)
+			return
 		} else {
+			response.ErrInternalServer(w)
 			slogext.Error(slog.Default(), err)
 			return
 		}
