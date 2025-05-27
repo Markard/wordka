@@ -10,6 +10,7 @@ var (
 	ErrCurrentGameNotFound      = errors.New("the current user is not playing any game now")
 	ErrIncorrectWord            = errors.New("the word you entered is not a 5-letter noun")
 	ErrCurrentGameAlreadyExists = errors.New("the current user is already playing a game")
+	ErrNoWordsFound             = errors.New("no words found")
 )
 
 type IGameRepository interface {
@@ -54,7 +55,11 @@ func (p *UseCase) CreateGame(user *entity.User) (*entity.Game, error) {
 
 	randomWord, err := p.repository.FindRandomWord()
 	if err != nil {
-		return nil, err
+		if randomWord == nil {
+			return nil, ErrNoWordsFound
+		} else {
+			return nil, err
+		}
 	}
 
 	game, err := p.repository.CreateGame(randomWord, user)
