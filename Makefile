@@ -20,6 +20,31 @@ help: ## Display this help screen
 # --- Tooling & Variables ----------------------------------------------------------------
 include ./misc/make/tools.Makefile
 
+
+# ~~~ Builds ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.PHONY: d-devenv-start
+d-devenv-start: ## Bootstrap Environment (with a Docker-Compose help).
+	@ docker-compose up -d --build postgres
+
+.PHONY: d-start
+d-start: ## Start application silently
+	docker-compose up -d --build
+
+.PHONY: d-stop
+d-stop: ## Stop application
+	docker-compose down
+
+.ONESHELL:
+i-build:
+	@ docker build --file Dockerfile --tag wordka .
+
+.PHONY: i-run
+i-run:
+	@ docker run \
+ 		-p 8081:8081 \
+ 		-e APP_ENV=prod \
+ 		wordka:latest
+
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 install-deps: migrate air gotestsum tparse mockery testfixtures ## Install Development Dependencies (localy).
 
