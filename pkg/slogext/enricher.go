@@ -6,7 +6,7 @@ import (
 )
 
 type logCtx struct {
-	UserId int
+	UserId int64
 }
 
 const logCtxKey = "logCtx"
@@ -38,7 +38,7 @@ func (h *ContextEnricher) WithGroup(name string) slog.Handler {
 	return &ContextEnricher{next: h.next.WithGroup(name)}
 }
 
-func WithLogUserID(ctx context.Context, userId int) context.Context {
+func WithLogUserID(ctx context.Context, userId int64) context.Context {
 	if c, ok := ctx.Value(logCtxKey).(logCtx); ok {
 		c.UserId = userId
 		return context.WithValue(ctx, logCtxKey, c)
