@@ -24,7 +24,7 @@ bin/migrate: GITHUB  := golang-migrate/migrate
 bin/migrate: ARCHIVE := migrate.$(OSTYPE)-$(ARCH).tar.gz
 bin/migrate: bin
 	@ printf "Install migrate from $(call github_url)... "
-	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - ./migrate > $@ && chmod +x $@
+	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - migrate > $@ && chmod +x $@
 	@ echo "done."
 
 # ~~ [ air ] ~~~ https://github.com/cosmtrek/air ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,7 +78,7 @@ bin/mockery: GITHUB  := vektra/mockery
 bin/mockery: ARCHIVE := mockery_$(VERSION)_$(OSTYPE)_$(ARCH).tar.gz
 bin/mockery: bin
 	@ printf "Install mockery from $(call github_url)... "
-	@ curl -Ls $(call github_url) | tar -zOxf -  mockery > $@ && chmod +x $@
+	@ curl -Ls $(call github_url) | tar -zOxf - mockery > $@ && chmod +x $@
 	@ echo "done."
 
 # ~~ [ golangci-lint ] ~~~ https://github.com/golangci/golangci-lint ~~~~~~~~~~~~~~~~~~~~~
@@ -91,7 +91,7 @@ bin/golangci-lint: GITHUB  := golangci/golangci-lint
 bin/golangci-lint: ARCHIVE := golangci-lint-$(VERSION)-$(OSTYPE)-$(ARCH).tar.gz
 bin/golangci-lint: bin
 	@ printf "Install golangci-linter from $(call github_url)... "
-	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - $(shell printf golangci-lint-$(VERSION)-$(OSTYPE)-$(ARCH)/golangci-lint | tr A-Z a-z ) > $@ && chmod +x $@
+	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - golangci-lint > $@ && chmod +x $@
 	@ echo "done."
 
 # ~~ [ testfixtures ] ~~~ https://github.com/go-testfixtures/testfixtures ~~~~~~~~~~~~~~~~~~~~~
@@ -104,5 +104,5 @@ bin/testfixtures: GITHUB  := go-testfixtures/testfixtures
 bin/testfixtures: ARCHIVE := testfixtures_$(OSTYPE)_$(ARCH).tar.gz
 bin/testfixtures: bin
 	@ printf "Install testfixtures from $(call github_url)... "
-	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - $(shell printf testfixtures | tr A-Z a-z ) > $@ && chmod +x $@
+	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - testfixtures > $@ && chmod +x $@
 	@ echo "done."
