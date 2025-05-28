@@ -23,7 +23,7 @@ bin/migrate: VERSION := 4.18.3
 bin/migrate: GITHUB  := golang-migrate/migrate
 bin/migrate: ARCHIVE := migrate.$(OSTYPE)-$(ARCH).tar.gz
 bin/migrate: bin
-	@ printf "Install migrate... "
+	@ printf "Install migrate from $(call github_url)... "
 	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - ./migrate > $@ && chmod +x $@
 	@ echo "done."
 
@@ -36,7 +36,7 @@ bin/air: VERSION := 1.61.7
 bin/air: GITHUB  := cosmtrek/air
 bin/air: ARCHIVE := air_$(VERSION)_$(OSTYPE)_$(ARCH).tar.gz
 bin/air: bin
-	@ printf "Install air... "
+	@ printf "Install air from $(call github_url)... "
 	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - air > $@ && chmod +x $@
 	@ echo "done."
 
@@ -50,7 +50,7 @@ bin/gotestsum: VERSION := 1.12.2
 bin/gotestsum: GITHUB  := gotestyourself/gotestsum
 bin/gotestsum: ARCHIVE := gotestsum_$(VERSION)_$(OSTYPE)_$(ARCH).tar.gz
 bin/gotestsum: bin
-	@ printf "Install gotestsum... "
+	@ printf "Install gotestsum from $(call github_url)... "
 	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - gotestsum > $@ && chmod +x $@
 	@ echo "done."
 
@@ -64,7 +64,7 @@ bin/tparse: VERSION := 0.17.0
 bin/tparse: GITHUB  := mfridman/tparse
 bin/tparse: ARCHIVE := tparse_$(OSTYPE)_$(ARCH)
 bin/tparse: bin
-	@ printf "Install tparse... "
+	@ printf "Install tparse from $(call github_url)... "
 	@ curl -Ls $(call github_url) > $@ && chmod +x $@
 	@ echo "done."
 
@@ -77,7 +77,7 @@ bin/mockery: VERSION := 3.3.0
 bin/mockery: GITHUB  := vektra/mockery
 bin/mockery: ARCHIVE := mockery_$(VERSION)_$(OSTYPE)_$(ARCH).tar.gz
 bin/mockery: bin
-	@ printf "Install mockery... "
+	@ printf "Install mockery from $(call github_url)... "
 	@ curl -Ls $(call github_url) | tar -zOxf -  mockery > $@ && chmod +x $@
 	@ echo "done."
 
@@ -90,7 +90,7 @@ bin/golangci-lint: VERSION := 2.1.6
 bin/golangci-lint: GITHUB  := golangci/golangci-lint
 bin/golangci-lint: ARCHIVE := golangci-lint-$(VERSION)-$(OSTYPE)-$(ARCH).tar.gz
 bin/golangci-lint: bin
-	@ printf "Install golangci-linter... "
+	@ printf "Install golangci-linter from $(call github_url)... "
 	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - $(shell printf golangci-lint-$(VERSION)-$(OSTYPE)-$(ARCH)/golangci-lint | tr A-Z a-z ) > $@ && chmod +x $@
 	@ echo "done."
 
@@ -103,8 +103,6 @@ bin/testfixtures: VERSION := 3.16.0
 bin/testfixtures: GITHUB  := go-testfixtures/testfixtures
 bin/testfixtures: ARCHIVE := testfixtures_$(OSTYPE)_$(ARCH).tar.gz
 bin/testfixtures: bin
-	@ printf "Install testfixtures... "
-	@ echo ${github_url}
-	@ echo ${testfixtures_$(OSTYPE)_$(ARCH)/testfixtures}
+	@ printf "Install testfixtures from $(call github_url)... "
 	@ curl -Ls $(shell echo $(call github_url) | tr A-Z a-z) | tar -zOxf - $(shell printf testfixtures | tr A-Z a-z ) > $@ && chmod +x $@
 	@ echo "done."
