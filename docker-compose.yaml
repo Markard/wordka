@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: markarddev/wordka:latest
     container_name: wordka
     environment:
       - APP_ENV=prod
