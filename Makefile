@@ -46,9 +46,9 @@ i-run:
  		wordka:latest
 
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-install-deps: migrate air gotestsum tparse mockery testfixtures ## Install Development Dependencies (localy).
+install-deps: migrate air gotestsum tparse testfixtures ## Install Development Dependencies (localy).
 
-deps: $(MIGRATE) $(AIR) $(GOTESTSUM) $(TPARSE) $(MOCKERY) $(GOLANGCI) $(TESTFIXTURES) ## Checks for Global Development Dependencies.
+deps: $(MIGRATE) $(AIR) $(GOTESTSUM) $(TPARSE) $(GOLANGCI) $(TESTFIXTURES) ## Checks for Global Development Dependencies.
 deps:
 	@echo "Required Tools Are Available"
 

@@ -1,14 +1,21 @@
-name: CI/CD
+name: CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - patch-7
 
 jobs:
-  CI:
+  integration:
     runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup environment variables
+        run: cp .env.example .env
+
+      - name: Install dependencies
+        run: make install-deps && make deps
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -22,11 +29,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: markarddev/wordka
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: markarddev/wordka:latest
-
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
