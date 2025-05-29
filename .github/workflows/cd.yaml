@@ -46,6 +46,12 @@ jobs:
           docker run -d \
             --name wordka_app \
             -e APP_ENV=${{ vars.APP_ENV }} \
+            -e ES256_PRIVATE_KEY=${{ secrets.ES256_PRIVATE_KEY }} \
+            -e ES256_PUBLIC_KEY=${{ secrets.ES256_PUBLIC_KEY }} \
+            -e PG_DB=${{ secrets.PG_DB }} \
+            -e PG_USER=${{ secrets.PG_USER }} \
+            -e PG_PASS=${{ secrets.PG_PASS }} \
+            -e PG_PORT=${{ secrets.PG_PORT }} \
             -e PG_HOST=wordka_postgres \
             -p 80:80 \
             --restart always \
