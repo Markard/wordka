@@ -5,7 +5,7 @@ services:
       - APP_ENV=prod
       - PG_HOST=postgres
     ports:
-      - "80:80"
+      - "8081:8081"
     restart: always
     depends_on:
       postgres:
@@ -30,7 +30,7 @@ services:
     ports:
       - ${PG_PORT}:${PG_PORT}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_PASS}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -8,6 +8,11 @@ on:
 jobs:
   deploy:
     runs-on: [self-hosted]
+    env:
+      APP_ENV: ${{ vars.APP_ENV }}
+      PG_USER: ${{ secrets.PG_USER }}
+      PG_PASS: ${{ secrets.PG_PASS }}
+      PG_HOST: ${{ vars.PG_HOST }}
     steps:
 
       - name: Login to Docker Hub
