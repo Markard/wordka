@@ -1,6 +1,8 @@
 services:
   app:
     image: markarddev/wordka:latest
+    environment:
+      - APP_ENV
     ports:
       - "80:80"
     restart: always
