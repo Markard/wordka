@@ -68,19 +68,6 @@ bin/tparse: bin
 	@ curl -Ls $(call github_url) > $@ && chmod +x $@
 	@ echo "done."
 
-# ~~ [ mockery ] ~~~ https://github.com/vektra/mockery ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-MOCKERY := $(shell command -v mockery || echo "bin/mockery")
-mockery: bin/mockery ## Installs mockery (mocks generation)
-
-bin/mockery: VERSION := 3.3.0
-bin/mockery: GITHUB  := vektra/mockery
-bin/mockery: ARCHIVE := mockery_$(VERSION)_$(OSTYPE)_$(ARCH).tar.gz
-bin/mockery: bin
-	@ printf "Install mockery from $(call github_url)... "
-	@ curl -Ls $(call github_url) | tar -zOxf - mockery > $@ && chmod +x $@
-	@ echo "done."
-
 # ~~ [ golangci-lint ] ~~~ https://github.com/golangci/golangci-lint ~~~~~~~~~~~~~~~~~~~~~
 
 GOLANGCI := $(shell command -v golangci-lint || echo "bin/golangci-lint")

@@ -10,6 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup environment variables
+        run: cp .env.example .env
+
       - name: Install dependencies
         run: make install-deps && make deps
 
