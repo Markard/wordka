@@ -25,7 +25,40 @@ jobs:
         run: docker pull markarddev/wordka:latest
 
       - name: Deploy PostgreSQL
-        run: make d-start-prod-pg
-
+        run: |
+          docker stop wordka_postgres
+          docker rename wordka_postgres wordka_postgres_old
+          docker run -d \
+            --name wordka_postgres \
+            -e POSTGRES_DB=${{ secrets.PG_DB }} \
+            -e POSTGRES_USER=${{ secrets.PG_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.PG_PASS }} \
+            -p ${{ secrets.PG_PORT }}:${{ secrets.PG_PORT }} \
+            --health-cmd="pg_isready -U ${{ secrets.PG_USER }} -d ${{ secrets.PG_DB }}" \
+            --health-interval=10s \
+            --health-timeout=5s \
+            --health-retries=5 \
+            --health-start-period=10s \
+            --restart unless-stopped \
+            --network wordka_network \
+            -v /var/local/pg_data:/var/lib/postgresql/data \
+            postgres:17.4-alpine
+          docker rm wordka_postgres_old
+          
       - name: Deploy app
-        run: make d-start-prod
+        run: |
+          docker stop wordka_app
+          docker rename wordka_app wordka_app_old
+          docker run -d \
+            --name wordka_app \
+            -e APP_ENV=${{ vars.APP_ENV }} \
+            -e PG_HOST=wordka_postgres \
+            -p 80:80 \
+            --restart always \
+            --network wordka_network \
+            --health-cmd="curl -f http://localhost:80/health || exit 1" \
+            --health-interval=10s \
+            --health-timeout=5s \
+            --health-retries=5 \
+            markarddev/wordka:latest
+          docker rm wordka_app_old
