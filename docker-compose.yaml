@@ -24,7 +24,6 @@ services:
       POSTGRES_DB: ${PG_DB}
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASS}
-      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - wordka_pg_data:/var/lib/postgresql/data
     ports:

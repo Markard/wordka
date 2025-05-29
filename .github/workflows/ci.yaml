@@ -37,6 +37,8 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v6
+        env:
+          APP_ENV: ${{ vars.APP_ENV }}
         with:
           context: .
           push: true

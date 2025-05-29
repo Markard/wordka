@@ -34,14 +34,6 @@ d-start: ## Start application silently
 d-stop: ## Stop application
 	docker-compose down
 
-.PHONY: d-start-prod
-d-start-prod: ## Start application in prod env
-	docker-compose -f docker-compose-prod.yaml up -d --no-deps app
-
-.PHONY: d-start-postgres
-d-start-prod-pg: ## Start postgres in prod env
-	docker-compose -f docker-compose-prod.yaml up -d --no-deps postgres
-
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 install-deps: migrate air gotestsum tparse testfixtures ## Install Development Dependencies (localy).
 
