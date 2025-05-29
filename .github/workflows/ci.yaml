@@ -48,5 +48,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: latest
+          tags: markarddev/wordka:latest
           labels: ${{ steps.meta.outputs.labels }}
