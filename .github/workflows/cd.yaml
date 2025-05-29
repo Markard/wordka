@@ -19,5 +19,8 @@ jobs:
       - name: Pull latest request
         run: docker pull markarddev/wordka:latest
 
+      - name: Deploy PostgreSQL
+        run: make d-start-prod-pg
+
       - name: Deploy app
         run: make d-start-prod

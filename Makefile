@@ -39,7 +39,7 @@ d-start-prod: ## Start application in prod env
 	docker-compose -f docker-compose-prod.yaml up -d --no-deps app
 
 .PHONY: d-start-postgres
-d-start-pg: ## Start postgres in prod env
+d-start-prod-pg: ## Start postgres in prod env
 	docker-compose -f docker-compose-prod.yaml up -d --no-deps postgres
 
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
