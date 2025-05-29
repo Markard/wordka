@@ -5,13 +5,13 @@ services:
       - APP_ENV=prod
       - PG_HOST=postgres
     ports:
-      - "8081:8081"
+      - "80:80"
     restart: always
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
