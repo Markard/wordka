@@ -19,3 +19,5 @@ jobs:
       - name: Pull latest request
         run: docker pull markarddev/wordka:latest
 
+      - name: Deploy app
+        run: make d-start-prod
