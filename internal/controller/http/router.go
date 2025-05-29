@@ -26,6 +26,7 @@ func SetupRouter(
 	router.Use(middleware.Timeout(setup.Config.HttpServer.Timeout))
 
 	router.Get("/robots.txt", robotsTxt)
+	router.Get("/health", healthCheck)
 	router.Mount("/v1", v1.CreateRouter(val, middlewares, useCases))
 }
 
@@ -35,4 +36,8 @@ func robotsTxt(w http.ResponseWriter, r *http.Request) {
 	robotTxt := `User-agent: *
 Disallow: /`
 	render.PlainText(w, r, robotTxt)
+}
+
+func healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }

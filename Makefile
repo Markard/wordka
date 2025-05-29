@@ -34,16 +34,9 @@ d-start: ## Start application silently
 d-stop: ## Stop application
 	docker-compose down
 
-.ONESHELL:
-i-build:
-	@ docker build --file Dockerfile --tag wordka .
-
-.PHONY: i-run
-i-run:
-	@ docker run \
- 		-p 8081:8081 \
- 		-e APP_ENV=prod \
- 		wordka:latest
+.PHONY: d-start-prod
+d-start-prod: ## Start application in prod env
+	docker-compose -f docker-compose-prod.yaml up -d --no-deps app
 
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 install-deps: migrate air gotestsum tparse testfixtures ## Install Development Dependencies (localy).

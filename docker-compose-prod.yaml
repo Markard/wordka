@@ -1,9 +1,10 @@
 services:
   app:
-    build: .
-    environment:
-      - APP_ENV=prod
-      - PG_HOST=postgres
+    image: markarddev/wordka:latest
+    deploy:
+      update_config:
+        order: start-first
+        parallelism: 1
     ports:
       - "8081:8081"
     restart: always
