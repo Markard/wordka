@@ -2,13 +2,16 @@ name: CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "patch-7" ]
 
 jobs:
   CI:
     runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: make install-deps && make deps
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
