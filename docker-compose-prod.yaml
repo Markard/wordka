@@ -1,10 +1,6 @@
 services:
   app:
     image: markarddev/wordka:latest
-    deploy:
-      update_config:
-        order: start-first
-        parallelism: 1
     ports:
       - "80:80"
     restart: always
@@ -31,7 +27,7 @@ services:
     ports:
       - ${PG_PORT}:${PG_PORT}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_PASS}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
