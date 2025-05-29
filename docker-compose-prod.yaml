@@ -1,9 +1,10 @@
 services:
   app:
-    build: .
-    environment:
-      - APP_ENV=prod
-      - PG_HOST=postgres
+    image: markarddev/wordka:latest
+    deploy:
+      update_config:
+        order: start-first
+        parallelism: 1
     ports:
       - "80:80"
     restart: always
@@ -26,7 +27,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASS}
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
-      - wordka_pg_data:/var/lib/postgresql/data
+      - /var/local/pg_data:/var/lib/postgresql/data
     ports:
       - ${PG_PORT}:${PG_PORT}
     healthcheck:
@@ -38,9 +39,6 @@ services:
     restart: unless-stopped
     networks:
       - wordka_network
-
-volumes:
-  wordka_pg_data:
 
 networks:
   wordka_network:
