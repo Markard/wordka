@@ -27,14 +27,14 @@ type (
 
 	Env struct {
 		AppEnv          string
+		ES256PrivateKey string
+		ES256PublicKey  string
 		PgDb            string
 		PgUser          string
 		PgPass          string
 		PgPort          string
 		PgHost          string
 		PgDSN           string
-		ES256PrivateKey string
-		ES256PublicKey  string
 	}
 )
 
