@@ -21,6 +21,9 @@ jobs:
         run: go mod download
 
       - name: Build
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags migrate -o bin/parser_bezbukv ./cmd/parser/bezbukv
+
+      - name: Parse
         env:
           APP_ENV: "${{ vars.APP_ENV }}"
           PG_DB: "${{ secrets.PG_DB }}"
@@ -28,7 +31,4 @@ jobs:
           PG_PASS: "${{ secrets.PG_PASS }}"
           PG_PORT: "${{ secrets.PG_PORT }}"
           PG_HOST: "${{ secrets.PG_HOST }}"
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags migrate -o bin/parser_bezbukv ./cmd/parser/bezbukv
-
-      - name: Parse
         run: bin/parser_bezbukv
