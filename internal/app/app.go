@@ -50,7 +50,7 @@ func Run(setup *config.Setup) {
 
 	// Middleware
 	middlewares := &middleware.Middlewares{
-		JwtAuthenticator: jwt.Authenticator(jwtService, authRepo),
+		JwtAuthenticator: jwt.Authenticator(jwtService, authRepo, logger),
 	}
 
 	// HTTP Server

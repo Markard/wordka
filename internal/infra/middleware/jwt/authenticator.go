@@ -7,6 +7,7 @@ import (
 	serviceJwt "github.com/Markard/wordka/internal/infra/service/jwt"
 	"github.com/Markard/wordka/pkg/http/response"
 	"github.com/Markard/wordka/pkg/slogext"
+	"log/slog"
 	"net/http"
 	"strings"
 )
@@ -41,7 +42,7 @@ var ErrNoTokenFound = errors.New("no token found")
 // or cookie header is then decoded by the `jwt-go` library and a *jwt.Token
 // object is set on the request context. In the case of a signature decoding error
 // the Authenticator will also set the error on the request context.
-func Authenticator(tv TokenVerifier, up UserProvider) func(http.Handler) http.Handler {
+func Authenticator(tv TokenVerifier, up UserProvider, logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		hfn := func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -49,17 +50,20 @@ func Authenticator(tv TokenVerifier, up UserProvider) func(http.Handler) http.Ha
 			errMsg := "Access to this resource requires authentication. Please provide a valid JWT token in the " +
 				"Authorization header (Bearer {token}), in the 'jwt' cookie, or as the 'jwt' query parameter."
 			if err != nil {
+				logger.Warn("Authentication: Error during token verification", "err", err)
 				response.ErrHttpError(w, http.StatusUnauthorized, errMsg)
 				return
 			}
 
 			if token == nil {
+				logger.Warn("Authentication: Token nil")
 				response.ErrHttpError(w, http.StatusUnauthorized, errMsg)
 				return
 			}
 
 			user, errUserFindById := up.FindById(token.Sub)
 			if errUserFindById != nil {
+				logger.Warn("Authentication: User not found during authorization", "err", errUserFindById)
 				response.ErrHttpError(w, http.StatusUnauthorized, errMsg)
 				return
 			}
