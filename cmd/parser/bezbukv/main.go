@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"github.com/Markard/wordka/config"
 	"github.com/Markard/wordka/internal/repo"
 	"github.com/Markard/wordka/pkg/postgres"
@@ -85,7 +86,7 @@ func (w *Worker) DoWork(job *Job) *Result {
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
-		slogext.Fatal(logger, err)
+		slogext.Fatal(logger, errors.New(resp.Status))
 	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
